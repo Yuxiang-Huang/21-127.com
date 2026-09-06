@@ -1,0 +1,30 @@
+{
+	"$schema": "./node_modules/wrangler/config-schema.json",
+	"compatibility_date": "2026-09-03",
+	"compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+	"name": "site-21-127",
+	"account_id": "773d29f33b1906d0984096837218bfd0",
+	"main": "@astrojs/cloudflare/entrypoints/server",
+	"assets": {
+		"directory": "./dist",
+		"binding": "ASSETS"
+	},
+	"observability": {
+		"enabled": true
+	},
+	"routes": [
+		{ "pattern": "21-127.com/*", "zone_name": "21-127.com" },
+		{ "pattern": "www.21-127.com/*", "zone_name": "21-127.com" }
+	],
+	"vars": {
+		"PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_test_d2lsbGluZy1zdHVkLTk1OTMuY2xlcmsuYWNjb3VudHMuZGV2JA"
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "21-127",
+			"database_id": "ecc5423a-afcf-4727-99f4-68b3cb83d570",
+			"migrations_dir": "migrations"
+		}
+	]
+}

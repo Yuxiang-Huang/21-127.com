@@ -1,0 +1,87 @@
+---
+import { Show, SignInButton, SignOutButton } from "@clerk/astro/components";
+import Layout from "../layouts/Layout.astro";
+import { getInterestCount, hasInterest } from "../lib/interest";
+
+const { isAuthenticated, userId } = Astro.locals.auth();
+const count = await getInterestCount();
+const interested =
+  isAuthenticated && userId ? await hasInterest(userId) : false;
+const countLabel =
+  count === 1 ? "1 person is interested" : `${count} people are interested`;
+---
+
+<Layout title="21-127">
+  <main>
+    <h1>21-127: Concepts of Mathematics</h1>
+    <p class="lede">
+      Express your interest in additional resources for CMU's 21-127: Concepts
+      of Mathematics course!
+    </p>
+    <p class="count" aria-live="polite">{countLabel}</p>
+    <div class="actions">
+      <Show when="signed-out">
+        <SignInButton mode="modal" />
+      </Show>
+      <Show when="signed-in">
+        <form method="post" action="/api/interest">
+          <button type="submit">
+            {interested ? "I'm no longer interested" : "I'm interested"}
+          </button>
+        </form>
+        <SignOutButton />
+      </Show>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  main {
+    max-width: 38rem;
+    margin: 0 auto;
+    padding: 4.5rem 1.5rem 6rem;
+  }
+
+  .kicker {
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin: 0 0 1rem;
+  }
+
+  h1 {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    margin: 0 0 1rem;
+  }
+
+  .lede {
+    font-size: 1.15rem;
+    color: var(--muted);
+    margin: 0 0 2rem;
+  }
+
+  .count {
+    font-size: 1.05rem;
+    margin: 0 0 1.5rem;
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: center;
+  }
+
+  .actions :global(button) {
+    font: inherit;
+    cursor: pointer;
+    color: var(--bg);
+    background: var(--ink);
+    border: 1px solid var(--ink);
+    border-radius: 999px;
+    padding: 0.55rem 1.1rem;
+  }
+</style>

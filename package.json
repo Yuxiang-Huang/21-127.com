@@ -1,0 +1,32 @@
+{
+  "name": "21-127-com",
+  "type": "module",
+  "version": "0.0.1",
+  "private": true,
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro build && wrangler dev",
+    "astro": "astro",
+    "deploy": "astro build && wrangler deploy",
+    "cf-typegen": "wrangler types",
+    "db:migrate:local": "wrangler d1 migrations apply 21-127 --local",
+    "db:migrate": "wrangler d1 migrations apply 21-127 --remote",
+    "setup": "bash scripts/setup.sh"
+  },
+  "dependencies": {
+    "@astrojs/cloudflare": "^14.3.0",
+    "@clerk/astro": "^4.1.0",
+    "astro": "^7.3.1"
+  },
+  "allowScripts": {
+    "esbuild": true
+  },
+  "devDependencies": {
+    "@types/node": "^26.4.1",
+    "wrangler": "^4.129.0"
+  }
+}
