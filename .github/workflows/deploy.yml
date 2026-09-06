@@ -32,7 +32,7 @@ jobs:
       - name: Build
         run: bun run build
         env:
-          PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ vars.PUBLIC_CLERK_PUBLISHABLE_KEY }}
+          PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.PUBLIC_CLERK_PUBLISHABLE_KEY }}
           CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
 
       - name: Apply D1 migrations
@@ -52,7 +52,7 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
           packageManager: bun
-          command: deploy --var PUBLIC_CLERK_PUBLISHABLE_KEY:${{ vars.PUBLIC_CLERK_PUBLISHABLE_KEY }}
+          command: deploy --var PUBLIC_CLERK_PUBLISHABLE_KEY:${{ secrets.PUBLIC_CLERK_PUBLISHABLE_KEY }}
           secrets: |
             CLERK_SECRET_KEY
         env:

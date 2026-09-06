@@ -16,9 +16,6 @@
 		{ "pattern": "21-127.com/*", "zone_name": "21-127.com" },
 		{ "pattern": "www.21-127.com/*", "zone_name": "21-127.com" }
 	],
-	"vars": {
-		"PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_test_d2lsbGluZy1zdHVkLTk1OTMuY2xlcmsuYWNjb3VudHMuZGV2JA"
-	},
 	"d1_databases": [
 		{
 			"binding": "DB",
