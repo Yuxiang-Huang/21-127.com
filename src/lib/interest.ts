@@ -1,18 +1,16 @@
-import { env } from 'cloudflare:workers';
+import { eq } from 'drizzle-orm';
+import { db, interests } from '../db';
 
 export async function getInterestCount(): Promise<number> {
-	const row = await env.DB.prepare(
-		'SELECT COUNT(*) AS count FROM interests',
-	).first<{ count: number }>();
-	return row?.count ?? 0;
+	return db().$count(interests);
 }
 
 export async function hasInterest(clerkUserId: string): Promise<boolean> {
-	const row = await env.DB.prepare(
-		'SELECT 1 AS found FROM interests WHERE clerk_user_id = ?',
-	)
-		.bind(clerkUserId)
-		.first();
+	const [row] = await db()
+		.select({ clerkUserId: interests.clerkUserId })
+		.from(interests)
+		.where(eq(interests.clerkUserId, clerkUserId))
+		.limit(1);
 	return row != null;
 }
 
@@ -20,17 +18,18 @@ export async function addInterest(
 	clerkUserId: string,
 	email: string | null,
 ): Promise<void> {
-	await env.DB.prepare(
-		'INSERT OR IGNORE INTO interests (clerk_user_id, email, created_at) VALUES (?, ?, ?)',
-	)
-		.bind(clerkUserId, email, new Date().toISOString())
-		.run();
+	await db()
+		.insert(interests)
+		.values({
+			clerkUserId,
+			email,
+			createdAt: new Date().toISOString(),
+		})
+		.onConflictDoNothing();
 }
 
 export async function removeInterest(clerkUserId: string): Promise<void> {
-	await env.DB.prepare('DELETE FROM interests WHERE clerk_user_id = ?')
-		.bind(clerkUserId)
-		.run();
+	await db().delete(interests).where(eq(interests.clerkUserId, clerkUserId));
 }
 
 export async function toggleInterest(
