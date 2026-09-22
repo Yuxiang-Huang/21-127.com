@@ -1,0 +1,124 @@
+\documentclass[11pt]{article}
+\usepackage{amssymb,amsmath,amsthm,multicol,enumitem,graphicx,mathtools}
+\setlength{\oddsidemargin}{0in}
+\setlength{\textwidth}{6.5in}
+\setlength{\topmargin}{-.35in}
+\setlength{\textheight}{9in}
+\usepackage{xcolor}
+
+\parindent 0pt
+\parskip 7pt
+
+\DeclareMathOperator{\im}{Im}
+\DeclareMathOperator{\preim}{PreIm}
+\DeclareMathOperator{\lcm}{lcm}
+\DeclareMathOperator{\id}{id}
+\DeclareMathOperator{\ord}{ord}
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+
+\setlist[itemize,1]{label=$\bullet$}
+\setlist[itemize,2]{label={\tiny $\blacktriangleright$}}
+\setlist[itemize,3]{label=$\diamond$}
+\setlist[itemize,4]{label=$\circ$}
+
+\setlist[enumerate]{itemsep=15pt}
+\setlist[itemize]{itemsep=5pt}
+\addtolength{\jot}{5pt}
+
+\usepackage{titlesec}
+\titlespacing*{\subsection}{0pt}{25pt}{0pt}
+
+\newif\ifSHOWSOLUTION
+\SHOWSOLUTIONtrue
+
+\newcommand{\showsolution}[1]{\par
+  \ifSHOWSOLUTION
+  \textbf{\textcolor{blue}{Solution.}} {\color{blue}#1}
+  \fi
+}
+
+\begin{document}
+\begin{center}
+  {\LARGE 21-127 Set Theory
+
+    \large Yuxiang Huang [yh4]
+
+  September 20th, 2026}
+\end{center}
+
+Prove that for any sets $A$ and $B$,
+$$
+A \subseteq B \text{ or } B \subseteq A
+\quad \Longleftrightarrow \quad
+\mathcal{P}(A) \cup \mathcal{P}(B) = \mathcal{P}(A \cup B)
+$$
+
+\newpage
+\showsolution{
+  Let $A$ and $B$ be sets.
+  \begin{itemize}
+    \item[$(\Rightarrow):$] Assume $A \subseteq B$ or
+      $B \subseteq A$.
+      \begin{itemize}
+        \item[$(\subseteq):$] Let
+          $X \in \mathcal{P}(A) \cup \mathcal{P}(B)$.
+          By def of set union, we have
+          $X \in \mathcal{P}(A)$ or $X \in \mathcal{P}(B)$.
+          By def of power set, we have
+          $X \subseteq A$ or $X \subseteq B$.
+          In either case, we have
+          $X \subseteq A \cup B$. Therefore,
+          $X \in \mathcal{P}(A \cup B)$.
+
+        \item[$(\supseteq):$] Let $X \in \mathcal{P}(A \cup B)$.
+          By def of power set, we have
+          $X \subseteq A \cup B$.
+          \begin{itemize}
+            \item Case 1: $A \subseteq B$. Then
+              $A \cup B = B$, so $X \subseteq B$.
+              By def of power set, we have
+              $X \in \mathcal{P}(B)$. By def of set union, we have
+              $X \in \mathcal{P}(A) \cup \mathcal{P}(B)$.
+
+            \item Case 2: $B \subseteq A$. Then
+              $A \cup B = A$, so $X \subseteq A$. By def of power set, we have
+              $X \in \mathcal{P}(A)$. By def of set union, we have
+              $X \in \mathcal{P}(A) \cup \mathcal{P}(B)$.
+          \end{itemize}
+          Thus, in either case, $X \in \mathcal{P}(A) \cup \mathcal{P}(B)$.
+      \end{itemize}
+
+    \item[$(\Leftarrow):$] Assume
+      $\mathcal{P}(A) \cup \mathcal{P}(B) = \mathcal{P}(A \cup B)$.
+
+      AFSOC $A \nsubseteq B$ and
+      $B \nsubseteq A$. Then there exist $a \in A \setminus B$ and
+      $b \in B \setminus A$. Since $\{a,b\} \subseteq A \cup B$,
+      by def of power set, we have
+      $\{a,b\} \in \mathcal{P}(A \cup B)$.
+
+      However, since
+      $b \in B \setminus A$, by def of set difference, we have
+      $b \notin A$. By def of subset, we have
+      $\{a,b\} \nsubseteq A$. By def of power set, we have
+      $\{a,b\} \notin \mathcal{P}(A)$.
+      Similarly, since
+      $a \in A \setminus B$, by def of set difference, we have
+      $a \notin B$. By def of subset, we have
+      $\{a,b\} \nsubseteq B$. By def of power set, we have
+      $\{a,b\} \notin \mathcal{P}(B)$.
+      Therefore,
+      since $\{a,b\} \notin \mathcal{P}(A)$ and
+      $\{a,b\} \notin \mathcal{P}(B)$,
+      by def of set union, we have that
+      $\{a,b\} \notin \mathcal{P}(A) \cup \mathcal{P}(B)$.
+
+      This contradicts the assumption that
+      $\mathcal{P}(A) \cup \mathcal{P}(B) = \mathcal{P}(A \cup B)$.
+      Therefore, we conclude that $A \subseteq B$ or $B \subseteq A$.
+      $\Rightarrow\Leftarrow$
+  \end{itemize}
+}
+
+\end{document}
