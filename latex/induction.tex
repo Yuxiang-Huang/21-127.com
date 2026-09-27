@@ -1,0 +1,92 @@
+\documentclass[11pt]{article}
+\usepackage{amssymb,amsmath,amsthm,multicol,enumitem,graphicx,mathtools}
+\setlength{\oddsidemargin}{0in}
+\setlength{\textwidth}{6.5in}
+\setlength{\topmargin}{-.35in}
+\setlength{\textheight}{9in}
+\usepackage{xcolor}
+
+\parindent 0pt
+\parskip 7pt
+
+\DeclareMathOperator{\im}{Im}
+\DeclareMathOperator{\preim}{PreIm}
+\DeclareMathOperator{\lcm}{lcm}
+\DeclareMathOperator{\id}{id}
+\DeclareMathOperator{\ord}{ord}
+\DeclarePairedDelimiter\ceil{\lceil}{\rceil}
+\DeclarePairedDelimiter\floor{\lfloor}{\rfloor}
+
+\setlist[itemize,1]{label=$\bullet$}
+\setlist[itemize,2]{label={\tiny $\blacktriangleright$}}
+\setlist[itemize,3]{label=$\diamond$}
+\setlist[itemize,4]{label=$\circ$}
+
+\setlist[enumerate]{itemsep=15pt}
+\setlist[itemize]{itemsep=5pt}
+\addtolength{\jot}{5pt}
+
+\usepackage{titlesec}
+\titlespacing*{\subsection}{0pt}{25pt}{0pt}
+
+\newif\ifSHOWSOLUTION
+\SHOWSOLUTIONtrue
+
+\newcommand{\showsolution}[1]{\par
+  \ifSHOWSOLUTION
+  \textbf{\textcolor{blue}{Solution.}} {\color{blue}#1}
+  \fi
+}
+
+\begin{document}
+\begin{center}
+  {\LARGE 21-127 Induction
+
+    \large Yuxiang Huang [yh4]
+
+  September 27th, 2026}
+\end{center}
+
+Prove that $(1 + x)^{21{,}127} \geq 1 + 21{,}127\,x$ for all real number $x \geq -1$.
+
+\newpage
+\showsolution{
+  We will prove that for all real $x \geq -1$ and any integer $n \geq 1$,
+  $$(1+x)^n \geq 1 + n x$$
+
+  Let $x \in \mathbb{R}$ such that $x \geq -1$. We proceed by induction on $n \geq 1$.
+
+  \begin{itemize}
+    \item \textbf{Base Case:} Let $n = 1$. Then
+      $
+      (1+x)^1 = 1 + x = 1 + 1 \cdot x,
+      $
+      so the inequality holds.
+      \vspace{10pt}
+
+    \item \textbf{Inductive Case:} Let $n \in \mathbb{Z}$ such that $n \geq 1$.
+
+    \item \textbf{Inductive Hypothesis:} Assume that
+      $(1+x)^n \geq 1 + n x$.
+
+    \item \textbf{Inductive Step:} Consider $n+1$. Then
+      $$
+      (1+x)^{n+1} = (1+x)^n (1+x).
+      $$
+      Using the inductive hypothesis, we have
+      $$
+      (1+x)^{n+1} \geq (1 + n x)(1 + x) = 1 + (n+1)x + n x^2.
+      $$
+      Since $x^2 \geq 0$, it follows that
+      $$
+      (1+x)^{n+1} \geq 1 + (n+1)x.
+      $$
+  \end{itemize}
+
+  By the Principle of Mathematical Induction, we conclude that for all integers $n \geq 1$
+  $$
+  (1+x)^n \geq 1 + n x
+  $$
+}
+
+\end{document}
