@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { parseQuestion } from "./atoms";
 import { assembleCatalog, type SourceFile } from "./catalog";
-import { hideCount } from "./recall";
+import { clozeMarks, hideCount } from "./recall";
 
 const question = `
 parts:
@@ -49,6 +49,61 @@ wrong:
 				"function.yaml",
 			),
 		).toThrow("repeats the part");
+	});
+});
+
+describe("clozeMarks", () => {
+	const parts = [
+		"Let $f$ be a ",
+		"bijection",
+		" if and only if $f$ is both an ",
+		"injection",
+		" and a ",
+		"surjection",
+		".",
+	];
+
+	test("either order of an if-and-only-if pair is correct", () => {
+		expect(
+			clozeMarks(
+				[
+					{ partIndex: 3, answer: "injection", picked: "surjection" },
+					{ partIndex: 5, answer: "surjection", picked: "injection" },
+				],
+				parts,
+			),
+		).toEqual([true, true]);
+	});
+
+	test("a one-sided swap is still wrong", () => {
+		expect(
+			clozeMarks(
+				[
+					{ partIndex: 3, answer: "injection", picked: "surjection" },
+					{ partIndex: 5, answer: "surjection", picked: "bijection" },
+				],
+				parts,
+			),
+		).toEqual([false, false]);
+	});
+
+	test("an implication does not flip", () => {
+		expect(
+			clozeMarks(
+				[
+					{ partIndex: 3, answer: "$f(x) = f(y)$", picked: "$x = y$" },
+					{ partIndex: 5, answer: "$x = y$", picked: "$f(x) = f(y)$" },
+				],
+				[
+					"$f$ is injective if and only if for all $x, y$, if ",
+					"",
+					"$f(x) = f(y)$",
+					", then ",
+					"",
+					"$x = y$",
+				],
+			),
+		).toEqual([false, false]);
 	});
 });
 

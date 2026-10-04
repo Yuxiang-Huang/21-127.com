@@ -26,6 +26,14 @@ const payload = JSON.stringify(cards).replaceAll("<", "\\u003c");
 		<p class="recall-progress" data-progress></p>
 		<h2 data-title></h2>
 		<div class="recall-statement" data-statement></div>
+		<div class="recall-picker" data-picker hidden>
+			<div class="recall-picker-nav" data-nav>
+				<button type="button" data-prev aria-label="Previous blank">←</button>
+				<p class="recall-hole" data-hole></p>
+				<button type="button" data-forward aria-label="Next blank">→</button>
+			</div>
+			<div class="recall-choices" data-choices></div>
+		</div>
 		<label class="recall-yuxiang" data-yuxiang hidden>
 			<span>Type the statement in LaTeX.</span>
 			<textarea data-input rows="8"></textarea>
@@ -44,7 +52,7 @@ const payload = JSON.stringify(cards).replaceAll("<", "\\u003c");
 </div>
 
 <script>
-	import { hideCount } from "../lib/library/recall";
+	import { clozeMarks, hideCount } from "../lib/library/recall";
 
 	type Choice = { text: string; html: string };
 	type Part = { text: string; html: string; wrong: Choice[] | null };
@@ -75,6 +83,12 @@ const payload = JSON.stringify(cards).replaceAll("<", "\\u003c");
 	const progress = root.querySelector("[data-progress]");
 	const result = root.querySelector("[data-result]");
 	const yuxiang = root.querySelector("[data-yuxiang]");
+	const picker = root.querySelector("[data-picker]");
+	const nav = root.querySelector("[data-nav]");
+	const choices = root.querySelector("[data-choices]");
+	const holeLabel = root.querySelector("[data-hole]");
+	const prevBlank = root.querySelector("[data-prev]");
+	const nextBlank = root.querySelector("[data-forward]");
 	const input = root.querySelector("[data-input]");
 	const check = root.querySelector("[data-check]");
 	const next = root.querySelector("[data-next]");
@@ -88,6 +102,17 @@ const payload = JSON.stringify(cards).replaceAll("<", "\\u003c");
 	let hiddenCorrect = 0;
 	let hiddenTotal = 0;
 	let similarities: number[] = [];
+	type Hole = {
+		partIndex: number;
+		answer: string;
+		choices: Choice[];
+		selected: number;
+		el: HTMLSpanElement;
+	};
+	let holes: Hole[] = [];
+	let cardParts: string[] = [];
+	let holeAt = 0;
+	let graded = false;
 
 	function show(element: Element | null, visible: boolean) {
 		if (element instanceof HTMLElement) element.hidden = !visible;
@@ -111,16 +136,72 @@ const payload = JSON.stringify(cards).replaceAll("<", "\\u003c");
 		return shuffle(atoms).slice(0, hideCount(atoms.length, rates[difficulty]));
 	}
 
-	function choiceControl(name: string, choice: Choice) {
-		const label = document.createElement("label");
-		const radio = document.createElement("input");
-		radio.type = "radio";
-		radio.name = name;
-		radio.value = choice.text;
-		const view = document.createElement("span");
-		view.innerHTML = choice.html;
-		label.append(radio, view);
-		return label;
+	function picks() {
+		return holes.map((hole) => ({
+			partIndex: hole.partIndex,
+			answer: hole.answer,
+			picked: hole.selected >= 0 ? hole.choices[hole.selected]?.text : undefined,
+		}));
+	}
+
+	function paintHoles() {
+		const current = holes[holeAt];
+		const marks = graded ? clozeMarks(picks(), cardParts) : [];
+		for (const [i, hole] of holes.entries()) {
+			const picked = hole.selected >= 0 ? hole.choices[hole.selected] : undefined;
+			hole.el.classList.toggle("active", !graded && i === holeAt);
+			if (!graded) {
+				hole.el.classList.remove("right", "wrong");
+				if (picked) hole.el.innerHTML = picked.html;
+				else hole.el.replaceChildren();
+				continue;
+			}
+			const correct = marks[i] === true;
+			hole.el.classList.remove("active");
+			hole.el.classList.toggle("right", correct);
+			hole.el.classList.toggle("wrong", !correct);
+			if (correct && picked) {
+				hole.el.innerHTML = picked.html;
+				continue;
+			}
+			const missed = document.createElement("span");
+			missed.className = "picked";
+			missed.innerHTML = picked?.html ?? "";
+			const correction = document.createElement("span");
+			correction.className = "correction";
+			correction.innerHTML = hole.choices.find((item) => item.text === hole.answer)?.html ?? "";
+			hole.el.replaceChildren(missed, correction);
+		}
+		const asking = !graded && difficulty !== "yuxiang" && holes.length > 0;
+		show(picker, asking);
+		show(nav, asking && holes.length > 1);
+		if (holeLabel && asking) holeLabel.textContent = `Blank ${holeAt + 1} of ${holes.length}`;
+		if (prevBlank instanceof HTMLButtonElement) prevBlank.disabled = holeAt <= 0;
+		if (nextBlank instanceof HTMLButtonElement) nextBlank.disabled = holeAt >= holes.length - 1;
+		if (!(choices instanceof HTMLElement)) return;
+		choices.replaceChildren();
+		if (!asking || !current) return;
+		for (const [choiceAt, item] of current.choices.entries()) {
+			const button = document.createElement("button");
+			button.type = "button";
+			button.className = "recall-option";
+			button.classList.toggle("selected", choiceAt === current.selected);
+			button.innerHTML = item.html;
+			button.addEventListener("click", () => {
+				current.selected = choiceAt;
+				if (holeAt < holes.length - 1) holeAt += 1;
+				paintHoles();
+			});
+			choices.append(button);
+		}
+	}
+
+	function shiftBlank(delta: number) {
+		if (graded || holes.length === 0) return;
+		const nextAt = holeAt + delta;
+		if (nextAt < 0 || nextAt >= holes.length) return;
+		holeAt = nextAt;
+		paintHoles();
 	}
 
 	function renderCard() {
@@ -132,11 +213,22 @@ const payload = JSON.stringify(cards).replaceAll("<", "\\u003c");
 		}
 		if (result) result.textContent = "";
 		statement.replaceChildren();
+		holes = [];
+		cardParts = card.parts.map((part) => part.text);
+		holeAt = 0;
+		graded = false;
 		show(yuxiang, difficulty === "yuxiang");
-		if (input instanceof HTMLTextAreaElement) input.value = "";
+		show(picker, false);
+		if (input instanceof HTMLTextAreaElement) {
+			input.value = "";
+			input.readOnly = false;
+		}
 		show(check, true);
 		show(next, false);
-		if (check instanceof HTMLButtonElement) check.disabled = false;
+		if (check instanceof HTMLButtonElement) {
+			check.disabled = false;
+			check.textContent = "Check";
+		}
 
 		if (difficulty === "yuxiang") return;
 		const hidden = new Set(hiddenIndexes(card));
@@ -147,38 +239,34 @@ const payload = JSON.stringify(cards).replaceAll("<", "\\u003c");
 				statement.append(span);
 				return;
 			}
-			const group = document.createElement("span");
-			group.className = "blank";
-			group.dataset.answer = part.text;
-			const choices = shuffle([
-				{ text: part.text, html: part.html },
-				...part.wrong,
-			]);
-			for (const choice of choices) {
-				group.append(choiceControl(`part-${index}-${partIndex}`, choice));
-			}
-			statement.append(group);
+			const el = document.createElement("span");
+			el.className = "blank-line";
+			const hole: Hole = {
+				partIndex,
+				answer: part.text,
+				choices: shuffle([{ text: part.text, html: part.html }, ...part.wrong]),
+				selected: -1,
+				el,
+			};
+			el.addEventListener("click", () => {
+				const at = holes.indexOf(hole);
+				if (graded || at < 0) return;
+				holeAt = at;
+				paintHoles();
+			});
+			holes.push(hole);
+			statement.append(el);
 		});
+		paintHoles();
 	}
 
 	function markCard() {
-		if (!(statement instanceof HTMLElement)) return;
-		let correct = 0;
-		let total = 0;
-		for (const group of statement.querySelectorAll(".blank")) {
-			if (!(group instanceof HTMLElement)) continue;
-			total += 1;
-			const selected = group.querySelector("input:checked");
-			const right = selected instanceof HTMLInputElement && selected.value === group.dataset.answer;
-			group.classList.add(right ? "right" : "wrong");
-			if (right) correct += 1;
-			for (const radio of group.querySelectorAll("input")) {
-				if (radio instanceof HTMLInputElement) radio.disabled = true;
-			}
-		}
+		graded = true;
+		const correct = clozeMarks(picks(), cardParts).filter(Boolean).length;
 		hiddenCorrect += correct;
-		hiddenTotal += total;
-		if (result) result.textContent = `${correct} / ${total}`;
+		hiddenTotal += holes.length;
+		paintHoles();
+		if (result) result.textContent = `${correct} / ${holes.length}`;
 		show(check, false);
 		show(next, true);
 		if (next instanceof HTMLButtonElement) {
@@ -198,24 +286,41 @@ const payload = JSON.stringify(cards).replaceAll("<", "\\u003c");
 		}
 		check.disabled = true;
 		if (result) result.textContent = "Checking…";
-		const response = await fetch("/api/yuxiang", {
-			method: "POST",
-			headers: { "content-type": "application/json" },
-			body: JSON.stringify({
-				topic: card.topic,
-				kind: card.kind,
-				slug: card.slug,
-				input: typed,
-			}),
-		});
-		const body = (await response.json()) as { similarity?: number; error?: string };
-		if (!response.ok || typeof body.similarity !== "number") {
+		let similarity: number;
+		try {
+			const response = await fetch("/api/yuxiang", {
+				method: "POST",
+				headers: { "content-type": "application/json" },
+				body: JSON.stringify({
+					topic: card.topic,
+					kind: card.kind,
+					slug: card.slug,
+					input: typed,
+				}),
+			});
+			const body = (await response.json()) as { similarity?: number; error?: string };
+			if (!response.ok || typeof body.similarity !== "number") {
+				check.disabled = false;
+				if (result) result.textContent = body.error ?? "Yuxiang is unavailable.";
+				return;
+			}
+			similarity = body.similarity;
+		} catch {
 			check.disabled = false;
-			if (result) result.textContent = body.error ?? "Yuxiang is unavailable.";
+			if (result) result.textContent = "Yuxiang is unavailable.";
 			return;
 		}
-		similarities.push(body.similarity);
-		if (result) result.textContent = body.similarity.toFixed(3);
+		similarities.push(similarity);
+		if (result) result.textContent = `Score: ${similarity.toFixed(3)}`;
+		if (statement instanceof HTMLElement) {
+			statement.replaceChildren();
+			for (const part of card.parts) {
+				const span = document.createElement("span");
+				span.innerHTML = part.html;
+				statement.append(span);
+			}
+		}
+		input.readOnly = true;
 		show(check, false);
 		show(next, true);
 		if (next instanceof HTMLButtonElement) {
@@ -229,7 +334,7 @@ const payload = JSON.stringify(cards).replaceAll("<", "\\u003c");
 		if (!scoreText) return;
 		if (difficulty === "yuxiang") {
 			const mean = similarities.reduce((sum, value) => sum + value, 0) / similarities.length;
-			scoreText.textContent = mean.toFixed(3);
+			scoreText.textContent = `Score: ${mean.toFixed(3)}`;
 			return;
 		}
 		scoreText.textContent = `${hiddenCorrect} / ${hiddenTotal}`;
@@ -253,6 +358,20 @@ const payload = JSON.stringify(cards).replaceAll("<", "\\u003c");
 			renderCard();
 		});
 	}
+
+	prevBlank?.addEventListener("click", () => shiftBlank(-1));
+	nextBlank?.addEventListener("click", () => shiftBlank(1));
+	document.addEventListener("keydown", (event) => {
+		if (!(picker instanceof HTMLElement) || picker.hidden) return;
+		if (event.target instanceof HTMLTextAreaElement) return;
+		if (event.key === "ArrowLeft") {
+			event.preventDefault();
+			shiftBlank(-1);
+		} else if (event.key === "ArrowRight") {
+			event.preventDefault();
+			shiftBlank(1);
+		}
+	});
 
 	check?.addEventListener("click", () => {
 		if (difficulty === "yuxiang") void markYuxiang();

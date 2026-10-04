@@ -1,8 +1,9 @@
 import type { APIRoute } from "astro";
+import { env } from "cloudflare:workers";
 import { catalog, findEntry, isKind } from "../../lib/library/load";
 import { cosineSimilarity } from "../../lib/library/similarity";
 
-export const POST: APIRoute = async ({ request, locals }) => {
+export const POST: APIRoute = async ({ request }) => {
 	let body: unknown;
 	try {
 		body = await request.json();
@@ -30,7 +31,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 	const statement = entry?.question?.statement;
 	if (!statement) return json({ error: "That question was not found." }, 404);
 
-	const key = openRouterKey(locals.runtime?.env);
+	const key = openRouterKey();
 	if (!key) return json({ error: "Yuxiang is unavailable." }, 500);
 
 	let response: Response;
@@ -67,9 +68,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
 	}
 };
 
-function openRouterKey(env: Env | undefined): string | undefined {
-	const fromRuntime = env?.OPENROUTER_API_KEY;
-	if (typeof fromRuntime === "string" && fromRuntime !== "") return fromRuntime;
+function openRouterKey(): string | undefined {
+	const fromWorker = env.OPENROUTER_API_KEY;
+	if (typeof fromWorker === "string" && fromWorker !== "") return fromWorker;
 	const fromFile = import.meta.env.OPENROUTER_API_KEY;
 	return typeof fromFile === "string" && fromFile !== "" ? fromFile : undefined;
 }
