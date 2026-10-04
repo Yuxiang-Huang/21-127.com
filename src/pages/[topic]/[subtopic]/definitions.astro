@@ -1,6 +1,7 @@
 ---
 import "katex/dist/katex.min.css";
 import LibrarySidebar from "../../../components/LibrarySidebar.astro";
+import Solution from "../../../components/Solution.astro";
 import Layout from "../../../layouts/Layout.astro";
 import { catalog, getSubtopic } from "../../../lib/library/load";
 import "../../../styles/library.css";
@@ -36,12 +37,7 @@ const subtopic = found?.subtopic;
 						<section class="definition" id={entry.slug}>
 							<h2>{entry.title}</h2>
 							<div class="prose" set:html={entry.html} />
-							{entry.solutionHtml && (
-								<details class="solution">
-									<summary>Solution</summary>
-									<div class="prose" set:html={entry.solutionHtml} />
-								</details>
-							)}
+							<Solution html={entry.solutionHtml} />
 						</section>
 					))}
 				</article>

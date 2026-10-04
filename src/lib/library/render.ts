@@ -29,16 +29,34 @@ const TEXT_WRAPPERS: Record<string, string> = {
 	underline: "u",
 };
 
+export type InlineProblem = {
+	promptHtml: string;
+	solutionHtml: string;
+};
+
 export type RenderedTex = {
 	title: string;
 	html: string;
 	solutionHtml: string | null;
+	inlineProblems: InlineProblem[] | null;
 };
 
 export function renderTex(source: string, file: string): RenderedTex {
 	const normalized = source.replace(/\r\n/g, "\n");
 	const document = stripDocument(normalized, file);
 	const { title, body } = extractSection(document, file);
+	const enumerated = extractEnumeratedSolutions(body, file);
+	if (enumerated) {
+		return {
+			title,
+			html: new Parser(enumerated.intro, file).parseContent(() => false),
+			solutionHtml: null,
+			inlineProblems: enumerated.items.map((item) => ({
+				promptHtml: new Parser(item.prompt, file).parseContent(() => false),
+				solutionHtml: new Parser(item.solution, file).parseContent(() => false),
+			})),
+		};
+	}
 	const { body: statement, solution } = extractSolution(body, file);
 	return {
 		title,
@@ -47,6 +65,7 @@ export function renderTex(source: string, file: string): RenderedTex {
 			solution === null
 				? null
 				: new Parser(solution, file).parseContent(() => false),
+		inlineProblems: null,
 	};
 }
 
@@ -90,6 +109,80 @@ function extractSolution(
 		throw new Error(`${file}: more than one \\showsolution`);
 	}
 	return { body, solution: groups[0] ?? null };
+}
+
+function extractEnumeratedSolutions(
+	source: string,
+	file: string,
+): { intro: string; items: { prompt: string; solution: string }[] } | null {
+	const { groups } = extractGroups(source, "\\showsolution", file);
+	if (groups.length < 2) return null;
+	const beginToken = "\\begin{enumerate}";
+	const endToken = "\\end{enumerate}";
+	const begin = source.indexOf(beginToken);
+	const end = source.lastIndexOf(endToken);
+	if (
+		begin < 0 ||
+		end < begin ||
+		source.slice(0, begin).includes("\\showsolution") ||
+		source.slice(end + endToken.length).trim()
+	) {
+		throw new Error(
+			`${file}: multiple solutions must sit inside one enumerate`,
+		);
+	}
+	const list = source.slice(begin + beginToken.length, end);
+	const items = splitItems(list, file).map((item) => {
+		const extracted = extractGroups(item, "\\showsolution", file);
+		if (extracted.groups.length !== 1) {
+			throw new Error(`${file}: each enumerated item needs one solution`);
+		}
+		return { prompt: extracted.body, solution: extracted.groups[0] ?? "" };
+	});
+	return { intro: source.slice(0, begin), items };
+}
+
+function splitItems(source: string, file: string): string[] {
+	const parts: string[] = [];
+	let depth = 0;
+	let i = 0;
+	let start = -1;
+	while (i < source.length) {
+		if (source[i] === "\\") {
+			if (
+				depth === 0 &&
+				source.startsWith("\\item", i) &&
+				!/[a-zA-Z]/.test(source[i + 5] ?? "")
+			) {
+				if (start >= 0) parts.push(source.slice(start, i));
+				i += "\\item".length;
+				i = skipItemLabel(source, i);
+				start = i;
+				continue;
+			}
+			i += Math.min(2, source.length - i);
+			continue;
+		}
+		if (source[i] === "{") depth++;
+		else if (source[i] === "}") {
+			depth--;
+			if (depth < 0) throw new Error(`${file}: unbalanced braces`);
+		}
+		i++;
+	}
+	if (start >= 0) parts.push(source.slice(start));
+	if (parts.length === 0) {
+		throw new Error(`${file}: enumerate has no items`);
+	}
+	return parts;
+}
+
+function skipItemLabel(source: string, index: number): number {
+	let i = index;
+	while (source[i] === " " || source[i] === "\t" || source[i] === "\n") i++;
+	if (source[i] !== "[") return index;
+	const close = source.indexOf("]", i + 1);
+	return close < 0 ? index : close + 1;
 }
 
 function extractGroups(

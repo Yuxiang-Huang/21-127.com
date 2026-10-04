@@ -1,6 +1,7 @@
 ---
 import "katex/dist/katex.min.css";
 import LibrarySidebar from "../../../../components/LibrarySidebar.astro";
+import Solution from "../../../../components/Solution.astro";
 import Layout from "../../../../layouts/Layout.astro";
 import { catalog, entryPath, getEntry } from "../../../../lib/library/load";
 import "../../../../styles/library.css";
@@ -43,12 +44,23 @@ const entry = found?.entry;
 				/>
 				<article class="article">
 					<h1>{entry.title}</h1>
-					<div class="prose" set:html={entry.html} />
-					{entry.solutionHtml && (
-						<details class="solution">
-							<summary>Solution</summary>
-							<div class="prose" set:html={entry.solutionHtml} />
-						</details>
+					{entry.inlineProblems ? (
+						<div class="prose">
+							<div set:html={entry.html} />
+							<ol>
+								{entry.inlineProblems.map((item) => (
+									<li>
+										<div set:html={item.promptHtml} />
+										<Solution html={item.solutionHtml} />
+									</li>
+								))}
+							</ol>
+						</div>
+					) : (
+						<>
+							<div class="prose" set:html={entry.html} />
+							<Solution html={entry.solutionHtml} />
+						</>
 					)}
 				</article>
 			</div>

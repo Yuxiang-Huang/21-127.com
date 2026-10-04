@@ -1,0 +1,26 @@
+---
+import { SignInButton } from "@clerk/astro/components";
+
+interface Props {
+	html: string | null;
+}
+
+const { html } = Astro.props;
+const { isAuthenticated } = Astro.locals.auth();
+---
+
+{
+	html &&
+		(isAuthenticated ? (
+			<details class="solution">
+				<summary>Solution</summary>
+				<div class="prose" set:html={html} />
+			</details>
+		) : (
+			<div class="solution">
+				<SignInButton mode="modal">
+					Sign in to view the solution
+				</SignInButton>
+			</div>
+		))
+}
