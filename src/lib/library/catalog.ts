@@ -18,6 +18,7 @@ export type Entry = {
 	title: string;
 	html: string;
 	solutionHtml: string | null;
+	inlineProblems: { promptHtml: string; solutionHtml: string }[] | null;
 };
 
 export type Subtopic = {
@@ -300,6 +301,7 @@ function readKindList(
 			title: rendered.title,
 			html: rendered.html,
 			solutionHtml: rendered.solutionHtml,
+			inlineProblems: rendered.inlineProblems,
 		};
 	});
 }

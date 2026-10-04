@@ -242,6 +242,10 @@ body:has(.reading) > .site-header {
 	margin: 0 0 0.9rem;
 }
 
+.prose a {
+	color: var(--accent);
+}
+
 .prose ul,
 .prose ol {
 	margin: 0 0 0.9rem;

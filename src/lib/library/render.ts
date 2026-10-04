@@ -462,8 +462,32 @@ class Parser {
 			const html = new Parser(inner, this.file).renderInlines();
 			return `<${wrapper}>${html}</${wrapper}>`;
 		}
+		if (name === "url" || name === "href") return this.parseLink(name);
 		if (name === "begin") return this.parseBegin();
 		throw this.fail(`unknown command \\${name}`);
+	}
+
+	private parseLink(name: "url" | "href"): string {
+		const url = this.readUrl();
+		const label =
+			name === "url"
+				? escapeHtml(url)
+				: new Parser(this.readBalanced(), this.file).renderInlines();
+		return `<a href="${escapeHtml(url)}">${label}</a>`;
+	}
+
+	private readUrl(): string {
+		const url = this.readBalanced().replace(/\s+/g, "");
+		let parsed: URL;
+		try {
+			parsed = new URL(url);
+		} catch {
+			throw this.fail(`invalid URL`);
+		}
+		if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+			throw this.fail(`URL must use http or https`);
+		}
+		return url;
 	}
 
 	private parseControlSymbol(ch: string): string {
