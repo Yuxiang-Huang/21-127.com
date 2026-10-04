@@ -381,6 +381,20 @@ body:has(.reading) > .site-header {
 	white-space: pre-wrap;
 }
 
+.recall-statement ul {
+	margin: 0.55rem 0 0.15rem;
+	padding-left: 1.35rem;
+	white-space: normal;
+}
+
+.recall-statement li {
+	margin: 0.45rem 0;
+}
+
+.recall-statement li strong {
+	font-weight: 650;
+}
+
 .recall-statement .katex,
 .recall-option .katex-mathml {
 	pointer-events: none;

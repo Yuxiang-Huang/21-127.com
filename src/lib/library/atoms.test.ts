@@ -1,7 +1,7 @@
 import { describe, expect, test } from "bun:test";
 import { parseQuestion } from "./atoms";
 import { assembleCatalog, type SourceFile } from "./catalog";
-import { clozeMarks, hideCount } from "./recall";
+import { clozeMarks, hideCount, questionPieces } from "./recall";
 
 const question = `
 parts:
@@ -104,6 +104,28 @@ describe("clozeMarks", () => {
 				],
 			),
 		).toEqual([false, false]);
+	});
+});
+
+describe("questionPieces", () => {
+	test("itemize becomes a list around the surrounding words", () => {
+		const pieces = questionPieces(
+			"satisfies:\\begin{itemize}\\item \\textbf{Totality}: for all $a$.\\end{itemize}",
+		);
+		expect(pieces.map((piece) => piece.kind)).toEqual([
+			"text",
+			"list",
+			"item",
+			"text",
+			"list-end",
+		]);
+		const item = pieces[3];
+		expect(item?.kind).toBe("text");
+		if (item?.kind === "text") {
+			expect(item.html).toContain("<strong>");
+			expect(item.html).toContain("Totality");
+			expect(item.html).not.toContain("textbf");
+		}
 	});
 });
 

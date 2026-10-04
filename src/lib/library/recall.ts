@@ -91,7 +91,6 @@ function nextListToken(
 	for (const [token, kind] of LIST_TOKENS) {
 		const at = source.indexOf(token, from);
 		if (at < 0) continue;
-		if (token === "\\item" && source.startsWith("\\itemize", at)) continue;
 		if (!found || at < found.at) found = { at, length: token.length, kind };
 	}
 	return found;

@@ -55,7 +55,12 @@ const payload = JSON.stringify(cards).replaceAll("<", "\\u003c");
 	import { clozeMarks, hideCount } from "../lib/library/recall";
 
 	type Choice = { text: string; html: string };
-	type Part = { text: string; html: string; wrong: Choice[] | null };
+	type Piece =
+		| { kind: "text"; html: string }
+		| { kind: "list" }
+		| { kind: "item" }
+		| { kind: "list-end" };
+	type Part = { text: string; html: string; pieces: Piece[]; wrong: Choice[] | null };
 	type Card = {
 		topic: string;
 		kind: string;
@@ -232,13 +237,8 @@ const payload = JSON.stringify(cards).replaceAll("<", "\\u003c");
 
 		if (difficulty === "yuxiang") return;
 		const hidden = new Set(hiddenIndexes(card));
-		card.parts.forEach((part, partIndex) => {
-			if (!hidden.has(partIndex) || !part.wrong) {
-				const span = document.createElement("span");
-				span.innerHTML = part.html;
-				statement.append(span);
-				return;
-			}
+		fillStatement(statement, card.parts, (part, partIndex) => {
+			if (!hidden.has(partIndex) || !part.wrong) return null;
 			const el = document.createElement("span");
 			el.className = "blank-line";
 			const hole: Hole = {
@@ -255,9 +255,55 @@ const payload = JSON.stringify(cards).replaceAll("<", "\\u003c");
 				paintHoles();
 			});
 			holes.push(hole);
-			statement.append(el);
+			return el;
 		});
 		paintHoles();
+	}
+
+	function fillStatement(
+		target: HTMLElement,
+		parts: Part[],
+		blankFor: (part: Part, partIndex: number) => HTMLElement | null,
+	) {
+		let list: HTMLUListElement | null = null;
+		let item: HTMLLIElement | null = null;
+		const current = () => item ?? target;
+		for (const [partIndex, part] of parts.entries()) {
+			const blank = blankFor(part, partIndex);
+			let usedBlank = false;
+			for (const piece of part.pieces) {
+				if (piece.kind === "list") {
+					list = document.createElement("ul");
+					target.append(list);
+					item = null;
+					continue;
+				}
+				if (piece.kind === "item") {
+					if (!list) {
+						list = document.createElement("ul");
+						target.append(list);
+					}
+					item = document.createElement("li");
+					list.append(item);
+					continue;
+				}
+				if (piece.kind === "list-end") {
+					list = null;
+					item = null;
+					continue;
+				}
+				if (blank && !usedBlank) {
+					current().append(blank);
+					usedBlank = true;
+					continue;
+				}
+				if (blank) continue;
+				const span = document.createElement("span");
+				span.innerHTML = piece.html;
+				current().append(span);
+			}
+			if (blank && !usedBlank) current().append(blank);
+		}
 	}
 
 	function markCard() {
@@ -314,11 +360,7 @@ const payload = JSON.stringify(cards).replaceAll("<", "\\u003c");
 		if (result) result.textContent = `Score: ${similarity.toFixed(3)}`;
 		if (statement instanceof HTMLElement) {
 			statement.replaceChildren();
-			for (const part of card.parts) {
-				const span = document.createElement("span");
-				span.innerHTML = part.html;
-				statement.append(span);
-			}
+			fillStatement(statement, card.parts, () => null);
 		}
 		input.readOnly = true;
 		show(check, false);
