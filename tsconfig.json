@@ -11,7 +11,7 @@
   "compilerOptions": {
     "types": [
       "./worker-configuration.d.ts",
-      "node"
+      "bun"
     ]
   }
 }

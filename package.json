@@ -31,8 +31,8 @@
     "esbuild": true
   },
   "devDependencies": {
+    "@types/bun": "^1.4.2",
     "@types/katex": "^0.16.8",
-    "@types/node": "^26.4.1",
     "wrangler": "^4.129.0"
   }
 }
