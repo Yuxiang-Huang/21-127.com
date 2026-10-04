@@ -37,7 +37,7 @@ const subtopic = found?.subtopic;
 						<section class="definition" id={entry.slug}>
 							<h2>{entry.title}</h2>
 							<div class="prose" set:html={entry.html} />
-							<Solution html={entry.solutionHtml} />
+							<Solution html={entry.proofHtml} label="Proof" />
 						</section>
 					))}
 				</article>

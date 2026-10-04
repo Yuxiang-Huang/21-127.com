@@ -45,7 +45,7 @@ const upcoming = ["Logics", "Sets", "Inductions"];
 						<ul>
 							{topic.subtopics.map((subtopic) => (
 								<li>
-									<a href={subtopicPath(subtopic)}>{subtopic.title}</a>
+									<a href={subtopicPath(topic.slug, subtopic)}>{subtopic.title}</a>
 								</li>
 							))}
 						</ul>

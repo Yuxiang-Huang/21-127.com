@@ -41,7 +41,9 @@ export {
 	getEntry,
 	getSubtopic,
 	isKind,
+	recallEntries,
 	subtopicPath,
+	topicRecallEntries,
 	KINDS,
 } from "./catalog";
-export type { Catalog, Entry, Kind, Subtopic, Topic } from "./catalog";
+export type { Catalog, Entry, Kind, Question, Subtopic, Topic } from "./catalog";

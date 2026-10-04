@@ -38,6 +38,7 @@ export type RenderedTex = {
 	title: string;
 	html: string;
 	solutionHtml: string | null;
+	proofHtml: string | null;
 	inlineProblems: InlineProblem[] | null;
 };
 
@@ -51,20 +52,20 @@ export function renderTex(source: string, file: string): RenderedTex {
 			title,
 			html: new Parser(enumerated.intro, file).parseContent(() => false),
 			solutionHtml: null,
+			proofHtml: null,
 			inlineProblems: enumerated.items.map((item) => ({
 				promptHtml: new Parser(item.prompt, file).parseContent(() => false),
 				solutionHtml: new Parser(item.solution, file).parseContent(() => false),
 			})),
 		};
 	}
-	const { body: statement, solution } = extractSolution(body, file);
+	const solved = extractOne(body, "\\showsolution", file);
+	const proved = extractOne(solved.body, "\\showproof", file);
 	return {
 		title,
-		html: new Parser(statement, file).parseContent(() => false),
-		solutionHtml:
-			solution === null
-				? null
-				: new Parser(solution, file).parseContent(() => false),
+		html: new Parser(proved.body, file).parseContent(() => false),
+		solutionHtml: renderGroup(solved.group, file),
+		proofHtml: renderGroup(proved.group, file),
 		inlineProblems: null,
 	};
 }
@@ -100,15 +101,21 @@ function extractSection(
 	return { title, body };
 }
 
-function extractSolution(
+function extractOne(
 	source: string,
+	command: string,
 	file: string,
-): { body: string; solution: string | null } {
-	const { body, groups } = extractGroups(source, "\\showsolution", file);
+): { body: string; group: string | null } {
+	const { body, groups } = extractGroups(source, command, file);
 	if (groups.length > 1) {
-		throw new Error(`${file}: more than one \\showsolution`);
+		throw new Error(`${file}: more than one ${command}`);
 	}
-	return { body, solution: groups[0] ?? null };
+	return { body, group: groups[0] ?? null };
+}
+
+function renderGroup(source: string | null, file: string): string | null {
+	if (source === null) return null;
+	return new Parser(source, file).parseContent(() => false);
 }
 
 function extractEnumeratedSolutions(
@@ -300,6 +307,32 @@ function pushTagText(parts: string[], text: string) {
 	if (!text) return;
 	const escaped = text.replace(/([\\{}])/g, "\\$1");
 	parts.push(`\\text{${escaped}}`);
+}
+
+export function renderFragment(source: string): string {
+	let html = "";
+	let i = 0;
+	while (i < source.length) {
+		if (source.startsWith("$$", i)) {
+			const end = source.indexOf("$$", i + 2);
+			if (end < 0) throw new Error("question: unclosed display math");
+			html += renderMath(source.slice(i + 2, end), true, "question");
+			i = end + 2;
+			continue;
+		}
+		if (source[i] === "$") {
+			const end = source.indexOf("$", i + 1);
+			if (end < 0) throw new Error("question: unclosed math");
+			html += renderMath(source.slice(i + 1, end), false, "question");
+			i = end + 1;
+			continue;
+		}
+		const next = source.indexOf("$", i);
+		const chunk = next < 0 ? source.slice(i) : source.slice(i, next);
+		html += escapeHtml(chunk);
+		i = next < 0 ? source.length : next;
+	}
+	return html;
 }
 
 function escapeHtml(text: string): string {

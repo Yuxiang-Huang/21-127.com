@@ -25,7 +25,7 @@ A named, ordered cluster of Subtopics.
 _Avoid_: week, unit, chapter, tab, section
 
 **Subtopic**:
-A named part of one Topic, holding the Definitions, Techniques, Theorems, and Problems that belong together. The Subtopic, and each item within its kind, has an author-assigned place in the Topic's order.
+A named part of one Topic. A content Subtopic holds the Definitions, Techniques, Theorems, and Problems that belong together. The Quiz is the last Subtopic and does not hold those kinds. The Subtopic, and each item within its kind, has an author-assigned place in the Topic's order.
 _Avoid_: section, unit, chapter
 
 **Definition**:
@@ -56,9 +56,13 @@ _Avoid_: answer key, writeup, proof
 An optional recording attached to a Problem, a Theorem, or a Subtopic's Definitions or Techniques tab.
 _Avoid_: walkthrough, recording
 
-**Drill**:
-A matching of a Topic's Definitions to their statements, authored as a finite set and shuffled so it can run without end.
-_Avoid_: quiz, flashcard, infinite exercise
+**Quiz**:
+A pass over Definitions, Techniques, and Theorems. Each content Subtopic has one, after Theorems and before Problems. The last Subtopic of a Topic is the Quiz over every Definition, Technique, and Theorem in the Topic.
+_Avoid_: drill, test, exam, flashcard
+
+**Atom**:
+One part of a question whose index has wrong answers. The part's own text is the correct choice.
+_Avoid_: keyword, blank, token
 
 ### Signals
 

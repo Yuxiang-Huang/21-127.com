@@ -1,15 +1,23 @@
 ---
+import ListChecks from "@lucide/astro/icons/list-checks";
 import KindIcon from "./KindIcon.astro";
-import { entryPath, type Kind, type Subtopic, type Topic } from "../lib/library/load";
+import {
+	entryPath,
+	recallEntries,
+	type Kind,
+	type Subtopic,
+	type Topic,
+} from "../lib/library/load";
 
 interface Props {
 	topic: Topic;
 	subtopic: Subtopic;
-	currentKind: Kind;
+	currentKind?: Kind;
 	currentSlug?: string;
+	recall?: "drill" | "quiz";
 }
 
-const { topic, subtopic, currentKind, currentSlug } = Astro.props;
+const { topic, subtopic, currentKind, currentSlug, recall } = Astro.props;
 
 function here(item: Subtopic, kind: Kind, slug?: string) {
 	return (
@@ -24,7 +32,15 @@ function here(item: Subtopic, kind: Kind, slug?: string) {
 	<p class="topic-name">{topic.title}</p>
 	<ul class="subtopics">
 		{
-			topic.subtopics.map((item) => (
+			topic.subtopics.map((item) =>
+				item.slug === "quiz" ? (
+					<li class:list={{ current: recall === "quiz" }}>
+						<a class="quiz-link" href={`/${topic.slug}/quiz`}>
+							<ListChecks size={16} aria-hidden="true" />
+							<span>Quiz</span>
+						</a>
+					</li>
+				) : (
 				<li>
 					<details open={item.slug === subtopic.slug}>
 						<summary>{item.title}</summary>
@@ -53,6 +69,18 @@ function here(item: Subtopic, kind: Kind, slug?: string) {
 									</a>
 								</li>
 							)}
+							{recallEntries(item).length > 0 && (
+								<li
+									class:list={{
+										current: recall === "drill" && item.slug === subtopic.slug,
+									}}
+								>
+									<a href={`/${topic.slug}/${item.slug}/drill`}>
+										<ListChecks size={16} aria-hidden="true" />
+										<span>Drill</span>
+									</a>
+								</li>
+							)}
 							{item.kinds.problems.map((entry) => (
 								<li
 									class:list={{
@@ -68,7 +96,8 @@ function here(item: Subtopic, kind: Kind, slug?: string) {
 						</ul>
 					</details>
 				</li>
-			))
+				),
+			)
 		}
 	</ul>
 </aside>

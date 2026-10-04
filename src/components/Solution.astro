@@ -3,24 +3,27 @@ import { SignInButton } from "@clerk/astro/components";
 
 interface Props {
 	html: string | null;
+	label?: "Solution" | "Proof";
 }
 
-const { html } = Astro.props;
+const { html, label = "Solution" } = Astro.props;
 const { isAuthenticated } = Astro.locals.auth();
+const prompt =
+	label === "Proof"
+		? "Sign in to view the proof"
+		: "Sign in to view the solution";
 ---
 
 {
 	html &&
 		(isAuthenticated ? (
 			<details class="solution">
-				<summary>Solution</summary>
+				<summary>{label}</summary>
 				<div class="prose" set:html={html} />
 			</details>
 		) : (
 			<div class="solution">
-				<SignInButton mode="modal">
-					Sign in to view the solution
-				</SignInButton>
+				<SignInButton mode="modal">{prompt}</SignInButton>
 			</div>
 		))
 }

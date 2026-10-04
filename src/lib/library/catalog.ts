@@ -1,5 +1,8 @@
 import { parse } from "yaml";
+import { parseQuestion, type Question } from "./atoms";
 import { renderTex } from "./render";
+
+export type { Question };
 
 export const KINDS = [
 	{ id: "definitions", label: "Definitions" },
@@ -18,7 +21,9 @@ export type Entry = {
 	title: string;
 	html: string;
 	solutionHtml: string | null;
+	proofHtml: string | null;
 	inlineProblems: { promptHtml: string; solutionHtml: string }[] | null;
+	question: Question | null;
 };
 
 export type Subtopic = {
@@ -59,12 +64,25 @@ export function entryPath(entry: Entry): string {
 	return `/${entry.topic}/${entry.subtopic}/${entry.kind}/${entry.slug}`;
 }
 
-export function subtopicPath(subtopic: Subtopic): string {
+export function subtopicPath(topicSlug: string, subtopic: Subtopic): string {
+	if (subtopic.slug === "quiz") return `/${topicSlug}/quiz`;
 	const first = firstEntry(subtopic);
 	if (first.kind === "definitions" || first.kind === "techniques") {
 		return `/${first.topic}/${first.subtopic}/${first.kind}`;
 	}
 	return entryPath(first);
+}
+
+const RECALL: Kind[] = ["definitions", "techniques", "theorems"];
+
+export function recallEntries(subtopic: Subtopic): Entry[] {
+	return RECALL.flatMap((kind) => subtopic.kinds[kind]).filter(
+		(entry) => entry.question !== null,
+	);
+}
+
+export function topicRecallEntries(topic: Topic): Entry[] {
+	return topic.subtopics.flatMap(recallEntries);
 }
 
 export function getSubtopic(
@@ -140,7 +158,7 @@ export function assembleCatalog(files: SourceFile[]): Catalog {
 		const topicFile = yaml.get(yamlPath);
 		if (topicFile === undefined) throw new Error(`missing ${yamlPath}`);
 		usedYaml.add(yamlPath);
-		topics.push(readTopic(slug, topicFile, tex, usedTex));
+		topics.push(readTopic(slug, topicFile, tex, yaml, usedTex, usedYaml));
 	}
 
 	for (const path of yaml.keys()) {
@@ -185,7 +203,9 @@ function readTopic(
 	slug: string,
 	text: string,
 	tex: Map<string, string>,
+	yaml: Map<string, string>,
 	usedTex: Set<string>,
+	usedYaml: Set<string>,
 ): Topic {
 	const file = `${slug}/topic.yaml`;
 	const doc = asRecord(parse(text), file);
@@ -209,8 +229,27 @@ function readTopic(
 	) as Record<Kind, Set<string>>;
 
 	const subtopics = doc.subtopics.map((item, index) =>
-		readSubtopic(slug, file, index, item, tex, usedTex, seenSubtopics, seenInKind),
+		readSubtopic(
+			slug,
+			file,
+			index,
+			item,
+			tex,
+			yaml,
+			usedTex,
+			usedYaml,
+			seenSubtopics,
+			seenInKind,
+		),
 	);
+	if (seenSubtopics.has("quiz")) {
+		throw new Error(`${file}: quiz is reserved`);
+	}
+	subtopics.push({
+		slug: "quiz",
+		title: "Quiz",
+		kinds: { definitions: [], techniques: [], theorems: [], problems: [] },
+	});
 
 	return { slug, title: title.trim(), subtopics };
 }
@@ -221,7 +260,9 @@ function readSubtopic(
 	index: number,
 	value: unknown,
 	tex: Map<string, string>,
+	yaml: Map<string, string>,
 	usedTex: Set<string>,
+	usedYaml: Set<string>,
 	seenSubtopics: Set<string>,
 	seenInKind: Record<Kind, Set<string>>,
 ): Subtopic {
@@ -256,7 +297,9 @@ function readSubtopic(
 			`${where}: ${kind.id}`,
 			file,
 			tex,
+			yaml,
 			usedTex,
+			usedYaml,
 			seenInKind[kind.id],
 		);
 	}
@@ -272,7 +315,9 @@ function readKindList(
 	where: string,
 	file: string,
 	tex: Map<string, string>,
+	yaml: Map<string, string>,
 	usedTex: Set<string>,
+	usedYaml: Set<string>,
 	seen: Set<string>,
 ): Entry[] {
 	if (!Array.isArray(value)) {
@@ -293,6 +338,10 @@ function readKindList(
 		}
 		usedTex.add(texPath);
 		const rendered = renderTex(source, texPath);
+		const question =
+			kind === "problems"
+				? null
+				: readQuestion(topicSlug, kind, entrySlug, file, yaml, usedYaml);
 		return {
 			topic: topicSlug,
 			subtopic: subtopicSlug,
@@ -301,9 +350,28 @@ function readKindList(
 			title: rendered.title,
 			html: rendered.html,
 			solutionHtml: rendered.solutionHtml,
+			proofHtml: rendered.proofHtml,
 			inlineProblems: rendered.inlineProblems,
+			question,
 		};
 	});
+}
+
+function readQuestion(
+	topicSlug: string,
+	kind: Kind,
+	slug: string,
+	file: string,
+	yaml: Map<string, string>,
+	usedYaml: Set<string>,
+): Question {
+	const yamlPath = `${topicSlug}/${kind}/${slug}.yaml`;
+	const source = yaml.get(yamlPath);
+	if (source === undefined) {
+		throw new Error(`${file}: missing question file ${yamlPath}`);
+	}
+	usedYaml.add(yamlPath);
+	return parseQuestion(source, yamlPath);
 }
 
 function asRecord(value: unknown, file: string): Record<string, unknown> {

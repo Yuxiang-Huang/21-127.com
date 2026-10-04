@@ -1,0 +1,39 @@
+---
+import "katex/dist/katex.min.css";
+import LibrarySidebar from "../../../../components/LibrarySidebar.astro";
+import Recall from "../../../../components/Recall.astro";
+import Layout from "../../../../layouts/Layout.astro";
+import { catalog, getSubtopic, recallEntries } from "../../../../lib/library/load";
+import { recallCard } from "../../../../lib/library/recall";
+import "../../../../styles/library.css";
+
+const topicSlug = Astro.params.topic;
+const subtopicSlug = Astro.params.subtopic;
+const found =
+	topicSlug && subtopicSlug
+		? getSubtopic(catalog, topicSlug, subtopicSlug)
+		: undefined;
+const entries = found ? recallEntries(found.subtopic) : [];
+
+if (!found || found.subtopic.slug === "quiz" || entries.length === 0) {
+	Astro.response.status = 404;
+}
+
+const topic = found?.topic;
+const subtopic = found?.subtopic;
+---
+
+<Layout title={subtopic ? `${subtopic.title} drill · 21-127` : "Not found"}>
+	{
+		topic && subtopic && entries.length > 0 ? (
+			<div class="library reading">
+				<LibrarySidebar topic={topic} subtopic={subtopic} recall="drill" />
+				<article class="article">
+					<Recall heading={`${subtopic.title} drill`} cards={entries.map(recallCard)} />
+				</article>
+			</div>
+		) : (
+			<p class="missing">Not found.</p>
+		)
+	}
+</Layout>
