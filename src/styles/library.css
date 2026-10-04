@@ -128,6 +128,12 @@
 	padding: 0;
 }
 
+.subtopics details > ul {
+	list-style: none;
+	margin: 0.15rem 0 0.55rem 0.85rem;
+	padding: 0;
+}
+
 .sidebar details {
 	margin: 0 0 0.35rem;
 }
@@ -153,7 +159,7 @@
 	line-height: 1.35;
 }
 
-.sidebar li.current a {
+.sidebar li.current > a {
 	background: var(--current);
 }
 
@@ -172,6 +178,23 @@
 	color: inherit;
 	font-family: Georgia, "Iowan Old Style", serif;
 	font-size: clamp(1.8rem, 3vw, 2.4rem);
+	font-weight: 500;
+}
+
+.definition {
+	scroll-margin-top: 1rem;
+}
+
+.definition + .definition {
+	margin-top: 2.25rem;
+	padding-top: 1.75rem;
+	border-top: 1px solid var(--line);
+}
+
+.definition h2 {
+	margin: 0 0 0.85rem;
+	font-family: Georgia, "Iowan Old Style", serif;
+	font-size: 1.45rem;
 	font-weight: 500;
 }
 

@@ -1,0 +1,66 @@
+---
+import { entryPath, type Kind, type Subtopic, type Topic } from "../lib/library/load";
+
+interface Props {
+	topic: Topic;
+	subtopic: Subtopic;
+	currentKind: Kind;
+	currentSlug?: string;
+}
+
+const { topic, subtopic, currentKind, currentSlug } = Astro.props;
+
+function here(item: Subtopic, kind: Kind, slug?: string) {
+	return (
+		item.slug === subtopic.slug &&
+		currentKind === kind &&
+		(slug === undefined || currentSlug === slug)
+	);
+}
+---
+
+<aside class="sidebar">
+	<a class="home-link" href="/">21-127</a>
+	<p class="topic-name">{topic.title}</p>
+	<ul class="subtopics">
+		{
+			topic.subtopics.map((item) => (
+				<li>
+					<details open={item.slug === subtopic.slug}>
+						<summary>{item.title}</summary>
+						<ul>
+							{item.kinds.definitions.length > 0 && (
+								<li class:list={{ current: here(item, "definitions") }}>
+									<a href={`/${topic.slug}/${item.slug}/definitions`}>
+										Definitions
+									</a>
+								</li>
+							)}
+							{item.kinds.techniques.length > 0 && (
+								<li class:list={{ current: here(item, "techniques") }}>
+									<a href={`/${topic.slug}/${item.slug}/techniques`}>
+										Techniques
+									</a>
+								</li>
+							)}
+							{item.kinds.theorems.length > 0 && (
+								<li class:list={{ current: here(item, "theorems") }}>
+									<a href={`/${topic.slug}/${item.slug}/theorems`}>Theorems</a>
+								</li>
+							)}
+							{item.kinds.problems.map((entry) => (
+								<li
+									class:list={{
+										current: here(item, "problems", entry.slug),
+									}}
+								>
+									<a href={entryPath(entry)}>{entry.title}</a>
+								</li>
+							))}
+						</ul>
+					</details>
+				</li>
+			))
+		}
+	</ul>
+</aside>

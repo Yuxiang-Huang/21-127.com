@@ -39,7 +39,9 @@ export {
 	findEntry,
 	firstEntry,
 	getEntry,
+	getSubtopic,
 	isKind,
+	subtopicPath,
 	KINDS,
 } from "./catalog";
 export type { Catalog, Entry, Kind, Subtopic, Topic } from "./catalog";

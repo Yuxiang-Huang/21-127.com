@@ -1,13 +1,8 @@
 ---
 import "katex/dist/katex.min.css";
+import LibrarySidebar from "../../../../components/LibrarySidebar.astro";
 import Layout from "../../../../layouts/Layout.astro";
-import {
-	catalog,
-	entryPath,
-	firstEntry,
-	getEntry,
-	KINDS,
-} from "../../../../lib/library/load";
+import { catalog, entryPath, getEntry } from "../../../../lib/library/load";
 import "../../../../styles/library.css";
 
 const topicSlug = Astro.params.topic;
@@ -18,6 +13,14 @@ const found =
 	topicSlug && subtopicSlug && kind && slug
 		? getEntry(catalog, topicSlug, subtopicSlug, kind, slug)
 		: undefined;
+
+if (
+	found?.entry.kind === "definitions" ||
+	found?.entry.kind === "techniques" ||
+	found?.entry.kind === "theorems"
+) {
+	return Astro.redirect(entryPath(found.entry), 301);
+}
 
 if (!found) {
 	Astro.response.status = 404;
@@ -32,41 +35,12 @@ const entry = found?.entry;
 	{
 		entry && topic && subtopic ? (
 			<div class="library reading">
-				<aside class="sidebar">
-					<a class="home-link" href="/">
-						21-127
-					</a>
-					<p class="topic-name">{topic.title}</p>
-					<ul class="subtopics">
-						{topic.subtopics.map((item) => (
-							<li class:list={{ current: item.slug === subtopic.slug }}>
-								<a href={entryPath(firstEntry(item))}>{item.title}</a>
-							</li>
-						))}
-					</ul>
-					{KINDS.map((group) =>
-						subtopic.kinds[group.id].length === 0 ? null : (
-							<details open={group.id === entry.kind}>
-								<summary>{group.label}</summary>
-								<ol>
-									{subtopic.kinds[group.id].map((item, index) => (
-										<li
-											class:list={{
-												current:
-													item.kind === entry.kind && item.slug === entry.slug,
-											}}
-										>
-											<a href={entryPath(item)}>
-												<span class="num">{index + 1}</span>
-												<span>{item.title}</span>
-											</a>
-										</li>
-									))}
-								</ol>
-							</details>
-						),
-					)}
-				</aside>
+				<LibrarySidebar
+					topic={topic}
+					subtopic={subtopic}
+					currentKind={entry.kind}
+					currentSlug={entry.slug}
+				/>
 				<article class="article">
 					<h1>{entry.title}</h1>
 					<div class="prose" set:html={entry.html} />

@@ -48,7 +48,34 @@ export function isKind(value: string): value is Kind {
 }
 
 export function entryPath(entry: Entry): string {
+	if (
+		entry.kind === "definitions" ||
+		entry.kind === "techniques" ||
+		entry.kind === "theorems"
+	) {
+		return `/${entry.topic}/${entry.subtopic}/${entry.kind}#${entry.slug}`;
+	}
 	return `/${entry.topic}/${entry.subtopic}/${entry.kind}/${entry.slug}`;
+}
+
+export function subtopicPath(subtopic: Subtopic): string {
+	const first = firstEntry(subtopic);
+	if (first.kind === "definitions" || first.kind === "techniques") {
+		return `/${first.topic}/${first.subtopic}/${first.kind}`;
+	}
+	return entryPath(first);
+}
+
+export function getSubtopic(
+	catalog: Catalog,
+	topicSlug: string,
+	subtopicSlug: string,
+): { topic: Topic; subtopic: Subtopic } | undefined {
+	const topic = catalog.topics.find((item) => item.slug === topicSlug);
+	if (!topic) return undefined;
+	const subtopic = topic.subtopics.find((item) => item.slug === subtopicSlug);
+	if (!subtopic) return undefined;
+	return { topic, subtopic };
 }
 
 export function firstEntry(subtopic: Subtopic): Entry {

@@ -2,7 +2,7 @@
 import { Show } from "@clerk/astro/components";
 import Layout from "../layouts/Layout.astro";
 import { getInterestCount, hasInterest } from "../lib/interest";
-import { catalog, entryPath, firstEntry } from "../lib/library/load";
+import { catalog, subtopicPath } from "../lib/library/load";
 import "../styles/library.css";
 
 const { isAuthenticated, userId } = Astro.locals.auth();
@@ -32,7 +32,7 @@ const upcoming = ["Logics", "Sets", "Inductions"];
 						<ul>
 							{topic.subtopics.map((subtopic) => (
 								<li>
-									<a href={entryPath(firstEntry(subtopic))}>{subtopic.title}</a>
+									<a href={subtopicPath(subtopic)}>{subtopic.title}</a>
 								</li>
 							))}
 						</ul>
