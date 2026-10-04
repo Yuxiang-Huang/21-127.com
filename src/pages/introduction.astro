@@ -1,0 +1,22 @@
+---
+import "katex/dist/katex.min.css";
+import source from "../../21-127.com-data/introduction.tex?raw";
+import Layout from "../layouts/Layout.astro";
+import { renderTex } from "../lib/library/render";
+import "../styles/library.css";
+
+const page = renderTex(source, "introduction.tex");
+---
+
+<Layout title={`${page.title} · 21-127`}>
+	<div class="library essay">
+		<article class="article">
+			<h1>{page.title}</h1>
+			<div class="prose" set:html={page.html} />
+		</article>
+	</div>
+</Layout>
+
+<script>
+	import "katex/contrib/copy-tex";
+</script>

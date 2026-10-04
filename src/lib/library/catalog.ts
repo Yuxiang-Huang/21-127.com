@@ -148,7 +148,7 @@ export function assembleCatalog(files: SourceFile[]): Catalog {
 		}
 	}
 	for (const path of tex.keys()) {
-		if (path === "preamble.tex") continue;
+		if (path === "preamble.tex" || path === "introduction.tex") continue;
 		if (!usedTex.has(path)) {
 			throw new Error(`tex file not listed in topic.yaml: ${path}`);
 		}

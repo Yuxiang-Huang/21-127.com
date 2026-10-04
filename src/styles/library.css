@@ -20,6 +20,16 @@
 	padding: 2.5rem 1.5rem 4rem;
 }
 
+.essay {
+	max-width: 48rem;
+	margin: 0 auto;
+}
+
+.essay .article {
+	overflow: visible;
+	min-height: calc(100vh - 3.25rem);
+}
+
 .cards {
 	display: flex;
 	flex-wrap: wrap;

@@ -2,8 +2,12 @@
 import { Show } from "@clerk/astro/components";
 import Layout from "../layouts/Layout.astro";
 import { getInterestCount, hasInterest } from "../lib/interest";
+import source from "../../21-127.com-data/introduction.tex?raw";
 import { catalog, subtopicPath } from "../lib/library/load";
+import { renderTex } from "../lib/library/render";
 import "../styles/library.css";
+
+const introduction = renderTex(source, "introduction.tex");
 
 const { isAuthenticated, userId } = Astro.locals.auth();
 const count = await getInterestCount();
@@ -17,6 +21,14 @@ const upcoming = ["Logics", "Sets", "Inductions"];
 <Layout title="21-127">
 	<div class="library home">
 		<div class="cards">
+			<article class="card">
+				<h2>Introduction</h2>
+				<ul>
+					<li>
+						<a href="/introduction">{introduction.title}</a>
+					</li>
+				</ul>
+			</article>
 			{
 				upcoming.map((title) => (
 					<article class="card">
