@@ -1,5 +1,6 @@
 ---
 import { SignInButton } from "@clerk/astro/components";
+import CircleQuestionMark from "@lucide/astro/icons/circle-question-mark";
 import type { RecallCard } from "../lib/library/recall";
 
 interface Props {
@@ -39,9 +40,32 @@ const payload = JSON.stringify(cards).replaceAll("<", "\\u003c");
 				<button type="button" data-difficulty="mastery">
 					Mastery
 				</button>
-				<button type="button" data-difficulty="yuxiang">
-					Yuxiang
-				</button>
+				<span class="recall-yuxiang-option">
+					<button type="button" data-difficulty="yuxiang">
+						Yuxiang
+					</button>
+					<span class="recall-help">
+						<button
+							type="button"
+							class="recall-help-button"
+							aria-label="About Yuxiang"
+							aria-describedby="yuxiang-help"
+						>
+							<CircleQuestionMark size={18} aria-hidden="true" />
+						</button>
+						<span id="yuxiang-help" class="recall-help-tip" role="tooltip">
+							You LaTeX the entire statement from scratch and are scored on the{" "}
+							<a
+								href="https://en.wikipedia.org/wiki/Cosine_similarity"
+								target="_blank"
+								rel="noopener noreferrer"
+							>
+								cosine similarity
+							</a>{" "}
+							between that and the answer.
+						</span>
+					</span>
+				</span>
 			</div>
 		</div>
 		<div data-play hidden>

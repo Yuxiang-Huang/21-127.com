@@ -364,6 +364,105 @@ body:has(.reading) > .site-header {
 	background: #f5f5f4;
 }
 
+.recall-yuxiang-option {
+	display: inline-flex;
+	align-items: center;
+	border: 1px solid #78716c;
+	border-radius: 6px;
+	background: #fafaf9;
+	padding-right: 0.55rem;
+}
+
+.recall-yuxiang-option:hover {
+	border-color: var(--ink);
+	background: #f5f5f4;
+}
+
+.recall-difficulties .recall-yuxiang-option > button {
+	border: 0;
+	border-radius: 6px 0 0 6px;
+	background: transparent;
+	padding: 0.45rem 0.35rem 0.45rem 0.9rem;
+}
+
+.recall-difficulties .recall-yuxiang-option > button:hover {
+	border: 0;
+	background: transparent;
+}
+
+.recall-help {
+	position: relative;
+	display: inline-flex;
+}
+
+.recall-difficulties .recall-help-button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: auto;
+	height: auto;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 0;
+	background: transparent;
+	color: var(--muted);
+	line-height: 0;
+	cursor: help;
+}
+
+.recall-difficulties .recall-help-button:hover,
+.recall-difficulties .recall-help:focus-within .recall-help-button {
+	border: 0;
+	background: transparent;
+	color: var(--ink);
+	opacity: 1;
+}
+
+.recall-help-tip {
+	position: absolute;
+	top: calc(100% + 0.45rem);
+	right: 0;
+	z-index: 3;
+	width: 16.5rem;
+	padding: 0.7rem 0.8rem;
+	border: 1px solid var(--line);
+	border-radius: 8px;
+	background: #fff;
+	box-shadow: 0 8px 20px rgb(28 25 23 / 10%);
+	color: var(--ink);
+	font-size: 0.92rem;
+	font-weight: 450;
+	line-height: 1.45;
+	text-align: left;
+	visibility: hidden;
+	opacity: 0;
+}
+
+.recall-help-tip::before {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 100%;
+	height: 0.45rem;
+}
+
+.recall-help:hover .recall-help-tip,
+.recall-help:focus-within .recall-help-tip {
+	visibility: visible;
+	opacity: 1;
+}
+
+.recall-help-tip a {
+	color: #1d4ed8;
+	font-weight: 650;
+}
+
+.recall-help-tip a:hover {
+	text-decoration: underline;
+}
+
 .recall-actions [data-check],
 .recall [data-again] {
 	background: var(--accent);
