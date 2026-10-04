@@ -21,7 +21,7 @@ CMU Concepts of Mathematics. The catalog course this site is about, shaped aroun
 _Avoid_: offering, class
 
 **Topic**:
-A named cluster of Definitions, Techniques, Theorems, and Problems, with an author-assigned place in the site's order.
+A named cluster of Definitions, Techniques, Theorems, and Problems. The Topic, and each item within its kind, has an author-assigned place in the site's order.
 _Avoid_: week, unit, chapter, tab, section
 
 **Definition**:
@@ -57,6 +57,10 @@ A matching of a Topic's Definitions to their statements, authored as a finite se
 _Avoid_: quiz, flashcard, infinite exercise
 
 ### Signals
+
+**Interest**:
+A User's site-wide declaration that they want further resources for 21-127. It can be withdrawn.
+_Avoid_: Request, vote, signup
 
 **Request**:
 A User's current declaration that they want a Video on a Problem, Theorem, or Topic tab that has none. It can be withdrawn, and it ceases when a Video is attached.

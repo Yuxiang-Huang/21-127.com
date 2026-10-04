@@ -1,0 +1,225 @@
+.library {
+	--bg: #f4f4f5;
+	--ink: #1c1917;
+	--muted: #57534e;
+	--line: #e7e5e4;
+	--current: #e8f3fc;
+	color-scheme: light;
+	background: var(--bg);
+	color: var(--ink);
+	min-height: calc(100vh - 3.25rem);
+	font-family:
+		"Segoe UI",
+		"Helvetica Neue",
+		sans-serif;
+}
+
+.home {
+	max-width: 72rem;
+	margin: 0 auto;
+	padding: 2.5rem 1.5rem 4rem;
+}
+
+.cards {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 1rem;
+	align-items: flex-start;
+}
+
+.card {
+	width: min(100%, 22rem);
+	background: #fff;
+	border: 1px solid var(--line);
+	border-radius: 8px;
+	box-shadow: 0 1px 2px rgb(28 25 23 / 6%);
+	padding: 1.15rem 1.3rem 1.4rem;
+}
+
+.card h2 {
+	margin: 0 0 0.35rem;
+	font-size: 1.35rem;
+	font-weight: 650;
+}
+
+.card h3 {
+	margin: 1rem 0 0.3rem;
+	font-size: 0.72rem;
+	font-weight: 700;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: var(--muted);
+}
+
+.card ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.card li {
+	margin: 0.18rem 0;
+	line-height: 1.35;
+}
+
+.interest {
+	max-width: 38rem;
+	margin-top: 2.5rem;
+	padding-top: 1.5rem;
+	border-top: 1px solid var(--line);
+}
+
+.interest h2 {
+	font-size: 1.35rem;
+	font-weight: 650;
+	margin: 0 0 0.75rem;
+}
+
+.interest .lede {
+	color: var(--muted);
+	margin: 0 0 1rem;
+}
+
+.interest .count {
+	margin: 0 0 1rem;
+}
+
+.interest .actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.75rem;
+	align-items: center;
+}
+
+.reading {
+	display: grid;
+	grid-template-columns: 17.5rem minmax(0, 1fr);
+	min-height: calc(100vh - 3.25rem);
+}
+
+.sidebar {
+	background: #f7f7f8;
+	border-right: 1px solid var(--line);
+	padding: 1.1rem 0.9rem 2rem;
+}
+
+.topic-name {
+	margin: 0 0.35rem 0.85rem;
+	font-size: 0.95rem;
+	font-weight: 650;
+}
+
+.sidebar details {
+	margin: 0 0 0.35rem;
+}
+
+.sidebar summary {
+	cursor: pointer;
+	color: inherit;
+	font-weight: 650;
+	padding: 0.28rem 0.35rem;
+}
+
+.sidebar ol {
+	list-style: none;
+	margin: 0.15rem 0 0.45rem;
+	padding: 0;
+}
+
+.sidebar li a {
+	display: flex;
+	gap: 0.45rem;
+	padding: 0.18rem 0.4rem;
+	border-radius: 4px;
+	line-height: 1.35;
+}
+
+.sidebar li.current a {
+	background: var(--current);
+}
+
+.sidebar .num {
+	min-width: 1.1rem;
+	color: var(--muted);
+}
+
+.article {
+	background: #fff;
+	padding: 2.25rem 2.5rem 4rem;
+}
+
+.article h1 {
+	margin: 0 0 1.25rem;
+	color: inherit;
+	font-family: Georgia, "Iowan Old Style", serif;
+	font-size: clamp(1.8rem, 3vw, 2.4rem);
+	font-weight: 500;
+}
+
+.prose {
+	font-family: Georgia, "Iowan Old Style", serif;
+	font-size: 1.05rem;
+	line-height: 1.65;
+	max-width: 40rem;
+}
+
+.prose p {
+	margin: 0 0 0.9rem;
+}
+
+.prose ul,
+.prose ol {
+	margin: 0 0 0.9rem;
+	padding-left: 1.35rem;
+}
+
+.prose li {
+	margin: 0.35rem 0;
+}
+
+.prose li:has(.item-label) {
+	list-style: none;
+}
+
+.prose .item-label {
+	font-weight: 650;
+}
+
+.prose .katex-display {
+	margin: 0.85rem 0;
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+
+.solution {
+	max-width: 40rem;
+	margin-top: 1.75rem;
+	border-top: 1px solid var(--line);
+	padding-top: 0.85rem;
+}
+
+.solution summary {
+	cursor: pointer;
+	color: inherit;
+	font-weight: 650;
+	margin-bottom: 0.75rem;
+}
+
+.missing {
+	padding: 3rem 1.5rem;
+}
+
+@media (max-width: 800px) {
+	.reading {
+		grid-template-columns: 1fr;
+	}
+
+	.sidebar {
+		border-right: 0;
+		border-bottom: 1px solid var(--line);
+	}
+
+	.article {
+		padding: 1.5rem 1.15rem 3rem;
+	}
+}

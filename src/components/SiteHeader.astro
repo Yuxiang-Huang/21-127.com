@@ -1,0 +1,275 @@
+---
+import { Show, SignInButton, SignOutButton } from "@clerk/astro/components";
+import CircleUser from "@lucide/astro/icons/circle-user";
+import LogIn from "@lucide/astro/icons/log-in";
+import LogOut from "@lucide/astro/icons/log-out";
+import User from "@lucide/astro/icons/user";
+
+const { isAuthenticated } = Astro.locals.auth();
+const user = isAuthenticated ? await Astro.locals.currentUser() : null;
+const name =
+	user?.fullName ||
+	[user?.firstName, user?.lastName].filter(Boolean).join(" ") ||
+	user?.username ||
+	user?.primaryEmailAddress?.emailAddress ||
+	"";
+---
+
+<header class="site-header">
+	<nav class="site-nav" aria-label="Site">
+		<a class="site-mark" href="/">
+			<img src="/favicon.svg" alt="" width="28" height="18" />
+			<span>21-127</span>
+		</a>
+		<a
+			href="https://www.linkedin.com/in/yu-xiang-huang/"
+			rel="noopener noreferrer"
+		>
+			About Author
+		</a>
+	</nav>
+	<div class="site-account">
+		<button
+			type="button"
+			class="account-toggle"
+			aria-label="Account"
+			aria-expanded="false"
+			aria-haspopup="menu"
+			aria-controls="account-menu"
+		>
+			<CircleUser size={22} aria-hidden="true" />
+		</button>
+		<div id="account-menu" class="account-menu" role="menu" hidden>
+			<Show when="signed-in">
+				<p class="account-name">
+					<User size={18} aria-hidden="true" />
+					<span data-account-name>{name}</span>
+				</p>
+			</Show>
+			<Show when="signed-out">
+				<SignInButton mode="modal" role="menuitem">
+					<LogIn size={18} aria-hidden="true" />
+					Sign in
+				</SignInButton>
+			</Show>
+			<Show when="signed-in">
+				<SignOutButton redirectUrl="/" role="menuitem">
+					<LogOut size={18} aria-hidden="true" />
+					Sign out
+				</SignOutButton>
+			</Show>
+		</div>
+	</div>
+</header>
+
+<script>
+	const root = document.querySelector(".site-account");
+	const toggle = root?.querySelector(".account-toggle");
+	const menu = root?.querySelector(".account-menu");
+
+	if (
+		root instanceof HTMLElement &&
+		toggle instanceof HTMLButtonElement &&
+		menu instanceof HTMLElement &&
+		root.dataset.bound !== "true"
+	) {
+		root.dataset.bound = "true";
+		const startedSignedOut = !root.querySelector("[data-account-name]");
+
+		const setOpen = (open: boolean) => {
+			toggle.setAttribute("aria-expanded", String(open));
+			menu.hidden = !open;
+		};
+
+		toggle.addEventListener("click", () => {
+			setOpen(menu.hidden);
+		});
+
+		menu.addEventListener("click", () => {
+			setOpen(false);
+		});
+
+		document.addEventListener("click", (event) => {
+			if (!(event.target instanceof Node) || !root.contains(event.target)) {
+				setOpen(false);
+			}
+		});
+
+		document.addEventListener("keydown", (event) => {
+			if (event.key === "Escape" && !menu.hidden) {
+				setOpen(false);
+				toggle.focus();
+			}
+		});
+
+		type ClerkUser = {
+			fullName?: string | null;
+			firstName?: string | null;
+			lastName?: string | null;
+			username?: string | null;
+			primaryEmailAddress?: { emailAddress?: string | null } | null;
+		};
+		type ClerkClient = {
+			user?: ClerkUser | null;
+			addListener?: (listener: (resources: { user?: ClerkUser | null }) => void) => void;
+		};
+
+		const clerkOn = () =>
+			(window as Window & { Clerk?: ClerkClient }).Clerk;
+
+		const applyName = () => {
+			const nameEl = root.querySelector("[data-account-name]");
+			const current = clerkOn()?.user;
+			if (!nameEl || !current) return;
+			const next =
+				current.fullName ||
+				[current.firstName, current.lastName].filter(Boolean).join(" ") ||
+				current.username ||
+				current.primaryEmailAddress?.emailAddress ||
+				"";
+			if (next) nameEl.textContent = next;
+		};
+
+		const bindClerk = () => {
+			const clerk = clerkOn();
+			if (!clerk?.addListener) return false;
+			clerk.addListener(({ user }) => {
+				applyName();
+				if (startedSignedOut && user) window.location.reload();
+			});
+			applyName();
+			return true;
+		};
+
+		if (!bindClerk()) {
+			const timer = window.setInterval(() => {
+				if (bindClerk()) window.clearInterval(timer);
+			}, 100);
+			window.setTimeout(() => window.clearInterval(timer), 10000);
+		}
+	}
+</script>
+
+<style>
+	.site-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
+		height: 3.25rem;
+		padding: 0 1rem;
+		background: #1b1b1b;
+		color: #fff;
+		font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+	}
+
+	.site-nav {
+		display: flex;
+		align-items: center;
+		gap: 1.35rem;
+		min-width: 0;
+	}
+
+	.site-header a {
+		color: #fff;
+		text-decoration: none;
+	}
+
+	.site-header a:hover {
+		text-decoration: underline;
+	}
+
+	.site-header .site-mark {
+		color: #6ec8e8;
+	}
+
+	.site-mark {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.55rem;
+		font-weight: 650;
+		letter-spacing: -0.01em;
+	}
+
+	.site-mark img {
+		display: block;
+		height: 1.35rem;
+		width: auto;
+		filter: invert(1);
+	}
+
+	.site-account {
+		position: relative;
+	}
+
+	.account-toggle {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.25rem;
+		height: 2.25rem;
+		padding: 0;
+		color: #fff;
+		background: transparent;
+		border: 0;
+		border-radius: 999px;
+		cursor: pointer;
+	}
+
+	.account-toggle:hover,
+	.account-toggle[aria-expanded="true"] {
+		background: rgb(255 255 255 / 12%);
+		opacity: 1;
+	}
+
+	.account-menu {
+		position: absolute;
+		top: calc(100% + 0.45rem);
+		right: 0;
+		z-index: 30;
+		min-width: 14.5rem;
+		padding: 0.3rem 0;
+		background: #fff;
+		color: #1c1917;
+		border-radius: 8px;
+		box-shadow:
+			0 0 0 1px rgb(0 0 0 / 6%),
+			0 12px 28px rgb(0 0 0 / 18%);
+		font-size: 0.95rem;
+	}
+
+	.account-menu[hidden] {
+		display: none;
+	}
+
+	.account-name {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		margin: 0;
+		padding: 0.7rem 1rem 0.75rem;
+		font-weight: 650;
+		border-bottom: 1px solid #eceae8;
+	}
+
+	.account-menu :global(button) {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		width: 100%;
+		margin: 0;
+		padding: 0.7rem 1rem;
+		border: 0;
+		border-radius: 0;
+		background: transparent;
+		color: #1c1917;
+		font: inherit;
+		text-align: left;
+		cursor: pointer;
+	}
+
+	.account-menu :global(button:hover) {
+		background: #f4f4f5;
+		opacity: 1;
+	}
+</style>

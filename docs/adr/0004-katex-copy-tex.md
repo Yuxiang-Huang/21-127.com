@@ -1,0 +1,3 @@
+# Render entries with KaTeX and copy-tex
+
+Entry pages render `.tex` from 21-127.com-data with KaTeX, and `katex/contrib/copy-tex` puts the formula's LaTeX source on the clipboard. Document structure (sections, lists, bold, the Solution disclosure) is our HTML. Temml was rejected because pasting a formula would yield MathML rather than LaTeX. latex.js was rejected because selecting a formula copies glyphs, and the preamble's custom macros are outside what it reliably parses. KaTeX cannot render `\tag`, so those labels are rewritten to `\quad\text{(...)}` before rendering; a copied formula then contains that rewrite.

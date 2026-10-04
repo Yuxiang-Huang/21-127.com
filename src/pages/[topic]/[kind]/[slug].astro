@@ -1,0 +1,71 @@
+---
+import "katex/dist/katex.min.css";
+import Layout from "../../../layouts/Layout.astro";
+import { catalog, getEntry, KINDS } from "../../../lib/library/load";
+import "../../../styles/library.css";
+
+const topicSlug = Astro.params.topic;
+const kind = Astro.params.kind;
+const slug = Astro.params.slug;
+const found =
+	topicSlug && kind && slug
+		? getEntry(catalog, topicSlug, kind, slug)
+		: undefined;
+
+if (!found) {
+	Astro.response.status = 404;
+}
+
+const topic = found?.topic;
+const entry = found?.entry;
+---
+
+<Layout title={entry ? `${entry.title} · 21-127` : "Not found"}>
+	{
+		entry && topic ? (
+			<div class="library reading">
+				<aside class="sidebar">
+					<p class="topic-name">{topic.title}</p>
+					{KINDS.map((group) =>
+						topic.kinds[group.id].length === 0 ? null : (
+							<details open={group.id === entry.kind}>
+								<summary>{group.label}</summary>
+								<ol>
+									{topic.kinds[group.id].map((item, index) => (
+										<li
+											class:list={{
+												current:
+													item.kind === entry.kind && item.slug === entry.slug,
+											}}
+										>
+											<a href={`/${topic.slug}/${group.id}/${item.slug}`}>
+												<span class="num">{index + 1}</span>
+												<span>{item.title}</span>
+											</a>
+										</li>
+									))}
+								</ol>
+							</details>
+						),
+					)}
+				</aside>
+				<article class="article">
+					<h1>{entry.title}</h1>
+					<div class="prose" set:html={entry.html} />
+					{entry.solutionHtml && (
+						<details class="solution">
+							<summary>Solution</summary>
+							<div class="prose" set:html={entry.solutionHtml} />
+						</details>
+					)}
+				</article>
+			</div>
+		) : (
+			<p class="missing">Not found.</p>
+		)
+	}
+</Layout>
+
+<script>
+	import "katex/contrib/copy-tex";
+</script>
