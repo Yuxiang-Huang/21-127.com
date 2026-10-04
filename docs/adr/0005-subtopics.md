@@ -1,6 +1,6 @@
 # Subtopics are the home-page slice
 
-The Functions home card listed every Definition, Technique, Theorem, and Problem. That grain is too fine: the handout's sections are the slices a reader chooses. A Topic is an ordered list of Subtopics, the home card lists those names, and an entry's address is `/{topic}/{subtopic}/{kind}/{slug}`. Tex stays at `{topic}/{kind}/{slug}.tex` because a kind's slugs are unique across the Topic; the Subtopic is a placement in `topic.yaml`. Functions is Binary Relations, Fundamentals, Images and Preimages, Jections, and Composition and Inverses.
+The Functions home card listed every Definition, Technique, Theorem, and Problem. That grain is too fine: the handout's sections are the slices a reader chooses. A Topic is an ordered list of Subtopics, the home card lists those names, and an entry's address is `/{topic}/{subtopic}/{kind}/{slug}`. Tex stays at `{topic}/{kind}/{slug}.tex` because a kind's slugs are unique across the Topic; the Subtopic is a placement in `topic.yaml`. Functions is Fundamentals, Images and Preimages, Jections, and Composition and Inverses. Binary relations sit in Fundamentals.
 
 ## Considered Options
 
