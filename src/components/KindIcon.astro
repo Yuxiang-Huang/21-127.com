@@ -1,0 +1,25 @@
+---
+import BookOpenText from "@lucide/astro/icons/book-open-text";
+import Lightbulb from "@lucide/astro/icons/lightbulb";
+import Pencil from "@lucide/astro/icons/pencil";
+import Sigma from "@lucide/astro/icons/sigma";
+import type { Kind } from "../lib/library/load";
+
+interface Props {
+	kind: Kind;
+	size?: number;
+}
+
+const { kind, size = 16 } = Astro.props;
+---
+
+<span class="kind-icon" data-kind={kind}>
+	{
+		kind === "definitions" && (
+			<BookOpenText size={size} aria-hidden="true" />
+		)
+	}
+	{kind === "techniques" && <Lightbulb size={size} aria-hidden="true" />}
+	{kind === "theorems" && <Sigma size={size} aria-hidden="true" />}
+	{kind === "problems" && <Pencil size={size} aria-hidden="true" />}
+</span>

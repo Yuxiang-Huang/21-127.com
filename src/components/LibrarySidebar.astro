@@ -1,4 +1,5 @@
 ---
+import KindIcon from "./KindIcon.astro";
 import { entryPath, type Kind, type Subtopic, type Topic } from "../lib/library/load";
 
 interface Props {
@@ -31,20 +32,25 @@ function here(item: Subtopic, kind: Kind, slug?: string) {
 							{item.kinds.definitions.length > 0 && (
 								<li class:list={{ current: here(item, "definitions") }}>
 									<a href={`/${topic.slug}/${item.slug}/definitions`}>
-										Definitions
+										<KindIcon kind="definitions" />
+										<span>Definitions</span>
 									</a>
 								</li>
 							)}
 							{item.kinds.techniques.length > 0 && (
 								<li class:list={{ current: here(item, "techniques") }}>
 									<a href={`/${topic.slug}/${item.slug}/techniques`}>
-										Techniques
+										<KindIcon kind="techniques" />
+										<span>Techniques</span>
 									</a>
 								</li>
 							)}
 							{item.kinds.theorems.length > 0 && (
 								<li class:list={{ current: here(item, "theorems") }}>
-									<a href={`/${topic.slug}/${item.slug}/theorems`}>Theorems</a>
+									<a href={`/${topic.slug}/${item.slug}/theorems`}>
+										<KindIcon kind="theorems" />
+										<span>Theorems</span>
+									</a>
 								</li>
 							)}
 							{item.kinds.problems.map((entry) => (
@@ -53,7 +59,10 @@ function here(item: Subtopic, kind: Kind, slug?: string) {
 										current: here(item, "problems", entry.slug),
 									}}
 								>
-									<a href={entryPath(entry)}>{entry.title}</a>
+									<a href={entryPath(entry)}>
+										<KindIcon kind="problems" />
+										<span>{entry.title}</span>
+									</a>
 								</li>
 							))}
 						</ul>

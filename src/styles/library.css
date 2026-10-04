@@ -164,10 +164,19 @@ body:has(.reading) > .site-header {
 
 .sidebar li a {
 	display: flex;
+	align-items: flex-start;
 	gap: 0.45rem;
 	padding: 0.18rem 0.4rem;
 	border-radius: 4px;
 	line-height: 1.35;
+}
+
+.kind-icon {
+	display: inline-flex;
+	flex: none;
+	margin-top: 0.16rem;
+	color: var(--muted);
+	line-height: 0;
 }
 
 .sidebar li.current > a {
