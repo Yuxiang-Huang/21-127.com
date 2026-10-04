@@ -11,11 +11,20 @@ const interested =
 	isAuthenticated && userId ? await hasInterest(userId) : false;
 const countLabel =
 	count === 1 ? "1 person is interested" : `${count} people are interested`;
+const upcoming = ["Logics", "Sets", "Inductions"];
 ---
 
 <Layout title="21-127">
 	<div class="library home">
 		<div class="cards">
+			{
+				upcoming.map((title) => (
+					<article class="card">
+						<h2>{title}</h2>
+						<p class="coming">Coming on Fall Break</p>
+					</article>
+				))
+			}
 			{
 				catalog.topics.map((topic) => (
 					<article class="card">
