@@ -6,9 +6,16 @@ export type RecallChoice = {
 	html: string;
 };
 
+export type RecallPiece =
+	| { kind: "text"; html: string }
+	| { kind: "list" }
+	| { kind: "item" }
+	| { kind: "list-end" };
+
 export type RecallPart = {
 	text: string;
 	html: string;
+	pieces: RecallPiece[];
 	wrong: RecallChoice[] | null;
 };
 
@@ -32,7 +39,8 @@ export function recallCard(entry: Entry): RecallCard {
 			const atom = question.atoms.find((item) => item.index === index);
 			return {
 				text,
-				html: renderFragment(text),
+				html: renderFragment(atomText(text)),
+				pieces: questionPieces(text),
 				wrong: atom
 					? atom.wrong.map((choice) => ({
 							text: choice,
@@ -51,6 +59,71 @@ export type ClozePick = {
 };
 
 const andGap = /^\s+and an?\s+$/;
+
+const LIST_TOKENS = [
+	["\\begin{itemize}", "list"],
+	["\\end{itemize}", "list-end"],
+	["\\item", "item"],
+] as const;
+
+export function questionPieces(source: string): RecallPiece[] {
+	const pieces: RecallPiece[] = [];
+	let i = 0;
+	while (i < source.length) {
+		const token = nextListToken(source, i);
+		const raw = token ? source.slice(i, token.at) : source.slice(i);
+		const text = token ? raw.trimEnd() : raw;
+		if (text.trim() !== "") pieces.push({ kind: "text", html: renderQuestionText(text) });
+		if (!token) break;
+		pieces.push({ kind: token.kind });
+		i = token.at + token.length;
+		while (source[i] === " " || source[i] === "\n" || source[i] === "\t") i++;
+	}
+	return pieces;
+}
+
+function nextListToken(
+	source: string,
+	from: number,
+): { at: number; length: number; kind: "list" | "item" | "list-end" } | null {
+	let found: { at: number; length: number; kind: "list" | "item" | "list-end" } | null =
+		null;
+	for (const [token, kind] of LIST_TOKENS) {
+		const at = source.indexOf(token, from);
+		if (at < 0) continue;
+		if (token === "\\item" && source.startsWith("\\itemize", at)) continue;
+		if (!found || at < found.at) found = { at, length: token.length, kind };
+	}
+	return found;
+}
+
+function renderQuestionText(source: string): string {
+	let html = "";
+	let i = 0;
+	const marker = "\\textbf{";
+	while (i < source.length) {
+		const at = source.indexOf(marker, i);
+		const chunk = at < 0 ? source.slice(i) : source.slice(i, at);
+		html += renderFragment(chunk);
+		if (at < 0) break;
+		const end = source.indexOf("}", at + marker.length);
+		if (end < 0) {
+			html += renderFragment(source.slice(at));
+			break;
+		}
+		html += `<strong>${renderFragment(source.slice(at + marker.length, end))}</strong>`;
+		i = end + 1;
+	}
+	return html;
+}
+
+function atomText(text: string): string {
+	return text
+		.replaceAll("\\begin{itemize}", "")
+		.replaceAll("\\end{itemize}", "")
+		.replaceAll("\\item", "")
+		.replaceAll(/\\textbf\{([^{}]*)\}/g, "$1");
+}
 
 export function clozeMarks(holes: ClozePick[], parts: string[]): boolean[] {
 	const partner = new Map<number, number>();
