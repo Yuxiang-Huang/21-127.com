@@ -14,11 +14,7 @@ const { kind, size = 16 } = Astro.props;
 ---
 
 <span class="kind-icon" data-kind={kind}>
-	{
-		kind === "definitions" && (
-			<BookOpenText size={size} aria-hidden="true" />
-		)
-	}
+	{kind === "definitions" && <BookOpenText size={size} aria-hidden="true" />}
 	{kind === "techniques" && <Lightbulb size={size} aria-hidden="true" />}
 	{kind === "theorems" && <Sigma size={size} aria-hidden="true" />}
 	{kind === "problems" && <Pencil size={size} aria-hidden="true" />}

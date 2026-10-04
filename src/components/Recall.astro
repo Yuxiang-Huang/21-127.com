@@ -1,4 +1,5 @@
 ---
+import { SignInButton } from "@clerk/astro/components";
 import type { RecallCard } from "../lib/library/recall";
 
 interface Props {
@@ -7,79 +8,118 @@ interface Props {
 }
 
 const { heading, cards } = Astro.props;
+const { isAuthenticated } = Astro.locals.auth();
 const payload = JSON.stringify(cards).replaceAll("<", "\\u003c");
 ---
 
-<div class="recall">
-	<h1>{heading}</h1>
-	<div data-choose>
-		<p class="recall-lead">Choose a difficulty.</p>
-		<div class="recall-difficulties">
-			<button type="button" data-difficulty="easy">Easy</button>
-			<button type="button" data-difficulty="medium">Medium</button>
-			<button type="button" data-difficulty="hard">Hard</button>
-			<button type="button" data-difficulty="mastery">Mastery</button>
-			<button type="button" data-difficulty="yuxiang">Yuxiang</button>
+{!isAuthenticated && (
+	<>
+		<h1>{heading}</h1>
+		<div class="solution">
+			<SignInButton mode="modal">Sign in to access quiz</SignInButton>
 		</div>
-	</div>
-	<div data-play hidden>
-		<p class="recall-progress" data-progress></p>
-		<h2 data-title></h2>
-		<div class="recall-statement" data-statement></div>
-		<div class="recall-picker" data-picker hidden>
-			<div class="recall-picker-nav" data-nav>
-				<button type="button" data-prev aria-label="Previous blank">←</button>
-				<p class="recall-hole" data-hole></p>
-				<button type="button" data-forward aria-label="Next blank">→</button>
+	</>
+)}
+
+{isAuthenticated && (
+	<div class="recall">
+		<h1>{heading}</h1>
+		<div data-choose>
+			<p class="recall-lead">Choose a difficulty.</p>
+			<div class="recall-difficulties">
+				<button type="button" data-difficulty="easy">
+					Easy
+				</button>
+				<button type="button" data-difficulty="medium">
+					Medium
+				</button>
+				<button type="button" data-difficulty="hard">
+					Hard
+				</button>
+				<button type="button" data-difficulty="mastery">
+					Mastery
+				</button>
+				<button type="button" data-difficulty="yuxiang">
+					Yuxiang
+				</button>
 			</div>
-			<div class="recall-choices" data-choices></div>
 		</div>
-		<label class="recall-yuxiang" data-yuxiang hidden>
-			<span>Type the statement in LaTeX.</span>
-			<textarea data-input rows="8"></textarea>
-		</label>
-		<p class="recall-result" data-result></p>
-		<div class="recall-actions">
-			<button type="button" data-check>Check</button>
-			<button type="button" data-next hidden>Next</button>
+		<div data-play hidden>
+			<p class="recall-progress" data-progress />
+			{/* biome-ignore lint/a11y/useHeadingContent: title is filled when a card is shown */}
+			<h2 data-title />
+			<div class="recall-statement" data-statement />
+			<div class="recall-picker" data-picker hidden>
+				<div class="recall-picker-nav" data-nav>
+					<button type="button" data-prev aria-label="Previous blank">
+						←
+					</button>
+					<p class="recall-hole" data-hole />
+					<button type="button" data-forward aria-label="Next blank">
+						→
+					</button>
+				</div>
+				<div class="recall-choices" data-choices />
+			</div>
+			<label class="recall-yuxiang" data-yuxiang hidden>
+				<span>Type the statement in LaTeX.</span>
+				<textarea data-input rows="8" />
+			</label>
+			<p class="recall-result" data-result />
+			<div class="recall-actions">
+				<button type="button" data-check>
+					Check
+				</button>
+				<button type="button" data-next hidden>
+					Next
+				</button>
+			</div>
 		</div>
+		<div data-score hidden>
+			<p class="recall-score" data-score-text />
+			<button type="button" data-again>
+				Start again
+			</button>
+		</div>
+		<script type="application/json" data-cards set:html={payload} />
 	</div>
-	<div data-score hidden>
-		<p class="recall-score" data-score-text></p>
-		<button type="button" data-again>Start again</button>
-	</div>
-	<script type="application/json" data-cards set:html={payload} />
-</div>
+)}
 
 <script>
-	import { clozeMarks, hideCount } from "../lib/library/recall";
+import { clozeMarks, hideCount } from "../lib/library/recall";
 
-	type Choice = { text: string; html: string };
-	type Piece =
-		| { kind: "text"; html: string }
-		| { kind: "list" }
-		| { kind: "item" }
-		| { kind: "list-end" };
-	type Part = { text: string; html: string; pieces: Piece[]; wrong: Choice[] | null };
-	type Card = {
-		topic: string;
-		kind: string;
-		slug: string;
-		title: string;
-		parts: Part[];
-	};
-	type Difficulty = "easy" | "medium" | "hard" | "mastery" | "yuxiang";
+type Choice = { text: string; html: string };
+type Piece =
+	| { kind: "text"; html: string }
+	| { kind: "list" }
+	| { kind: "item" }
+	| { kind: "list-end" };
+type Part = {
+	text: string;
+	html: string;
+	pieces: Piece[];
+	wrong: Choice[] | null;
+};
+type Card = {
+	topic: string;
+	kind: string;
+	slug: string;
+	title: string;
+	parts: Part[];
+};
+type Difficulty = "easy" | "medium" | "hard" | "mastery" | "yuxiang";
 
-	const rates: Record<Difficulty, number> = {
-		easy: 0.25,
-		medium: 0.5,
-		hard: 0.75,
-		mastery: 1,
-		yuxiang: 1,
-	};
+const rates: Record<Difficulty, number> = {
+	easy: 0.25,
+	medium: 0.5,
+	hard: 0.75,
+	mastery: 1,
+	yuxiang: 1,
+};
 
+function mountRecall() {
 	const root = document.querySelector(".recall");
-	if (!(root instanceof HTMLElement)) throw new Error("missing recall");
+	if (!(root instanceof HTMLElement)) return;
 	const choose = root.querySelector("[data-choose]");
 	const play = root.querySelector("[data-play]");
 	const score = root.querySelector("[data-score]");
@@ -145,7 +185,8 @@ const payload = JSON.stringify(cards).replaceAll("<", "\\u003c");
 		return holes.map((hole) => ({
 			partIndex: hole.partIndex,
 			answer: hole.answer,
-			picked: hole.selected >= 0 ? hole.choices[hole.selected]?.text : undefined,
+			picked:
+				hole.selected >= 0 ? hole.choices[hole.selected]?.text : undefined,
 		}));
 	}
 
@@ -153,7 +194,8 @@ const payload = JSON.stringify(cards).replaceAll("<", "\\u003c");
 		const current = holes[holeAt];
 		const marks = graded ? clozeMarks(picks(), cardParts) : [];
 		for (const [i, hole] of holes.entries()) {
-			const picked = hole.selected >= 0 ? hole.choices[hole.selected] : undefined;
+			const picked =
+				hole.selected >= 0 ? hole.choices[hole.selected] : undefined;
 			hole.el.classList.toggle("active", !graded && i === holeAt);
 			if (!graded) {
 				hole.el.classList.remove("right", "wrong");
@@ -174,15 +216,19 @@ const payload = JSON.stringify(cards).replaceAll("<", "\\u003c");
 			missed.innerHTML = picked?.html ?? "";
 			const correction = document.createElement("span");
 			correction.className = "correction";
-			correction.innerHTML = hole.choices.find((item) => item.text === hole.answer)?.html ?? "";
+			correction.innerHTML =
+				hole.choices.find((item) => item.text === hole.answer)?.html ?? "";
 			hole.el.replaceChildren(missed, correction);
 		}
 		const asking = !graded && difficulty !== "yuxiang" && holes.length > 0;
 		show(picker, asking);
 		show(nav, asking && holes.length > 1);
-		if (holeLabel && asking) holeLabel.textContent = `Blank ${holeAt + 1} of ${holes.length}`;
-		if (prevBlank instanceof HTMLButtonElement) prevBlank.disabled = holeAt <= 0;
-		if (nextBlank instanceof HTMLButtonElement) nextBlank.disabled = holeAt >= holes.length - 1;
+		if (holeLabel && asking)
+			holeLabel.textContent = `Blank ${holeAt + 1} of ${holes.length}`;
+		if (prevBlank instanceof HTMLButtonElement)
+			prevBlank.disabled = holeAt <= 0;
+		if (nextBlank instanceof HTMLButtonElement)
+			nextBlank.disabled = holeAt >= holes.length - 1;
 		if (!(choices instanceof HTMLElement)) return;
 		choices.replaceChildren();
 		if (!asking || !current) return;
@@ -322,7 +368,11 @@ const payload = JSON.stringify(cards).replaceAll("<", "\\u003c");
 
 	async function markYuxiang() {
 		const card = order[index];
-		if (!card || !(input instanceof HTMLTextAreaElement) || !(check instanceof HTMLButtonElement)) {
+		if (
+			!card ||
+			!(input instanceof HTMLTextAreaElement) ||
+			!(check instanceof HTMLButtonElement)
+		) {
 			return;
 		}
 		const typed = input.value;
@@ -344,10 +394,14 @@ const payload = JSON.stringify(cards).replaceAll("<", "\\u003c");
 					input: typed,
 				}),
 			});
-			const body = (await response.json()) as { similarity?: number; error?: string };
+			const body = (await response.json()) as {
+				similarity?: number;
+				error?: string;
+			};
 			if (!response.ok || typeof body.similarity !== "number") {
 				check.disabled = false;
-				if (result) result.textContent = body.error ?? "Yuxiang is unavailable.";
+				if (result)
+					result.textContent = body.error ?? "Yuxiang is unavailable.";
 				return;
 			}
 			similarity = body.similarity;
@@ -375,7 +429,9 @@ const payload = JSON.stringify(cards).replaceAll("<", "\\u003c");
 		show(score, true);
 		if (!scoreText) return;
 		if (difficulty === "yuxiang") {
-			const mean = similarities.reduce((sum, value) => sum + value, 0) / similarities.length;
+			const mean =
+				similarities.reduce((sum, value) => sum + value, 0) /
+				similarities.length;
 			scoreText.textContent = `Score: ${mean.toFixed(3)}`;
 			return;
 		}
@@ -385,7 +441,13 @@ const payload = JSON.stringify(cards).replaceAll("<", "\\u003c");
 	for (const button of root.querySelectorAll("[data-difficulty]")) {
 		button.addEventListener("click", () => {
 			const name = button.getAttribute("data-difficulty");
-			if (name !== "easy" && name !== "medium" && name !== "hard" && name !== "mastery" && name !== "yuxiang") {
+			if (
+				name !== "easy" &&
+				name !== "medium" &&
+				name !== "hard" &&
+				name !== "mastery" &&
+				name !== "yuxiang"
+			) {
 				return;
 			}
 			difficulty = name;
@@ -431,4 +493,7 @@ const payload = JSON.stringify(cards).replaceAll("<", "\\u003c");
 		show(play, false);
 		show(choose, true);
 	});
+}
+
+mountRecall();
 </script>

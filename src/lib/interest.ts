@@ -1,5 +1,5 @@
-import { eq } from 'drizzle-orm';
-import { db, interests } from '../db';
+import { eq } from "drizzle-orm";
+import { db, interests } from "../db";
 
 export async function getInterestCount(): Promise<number> {
 	return db().$count(interests);

@@ -1,13 +1,13 @@
 ---
 import ListChecks from "@lucide/astro/icons/list-checks";
-import KindIcon from "./KindIcon.astro";
 import {
 	entryPath,
-	recallEntries,
 	type Kind,
+	recallEntries,
 	type Subtopic,
 	type Topic,
 } from "../lib/library/load";
+import KindIcon from "./KindIcon.astro";
 
 interface Props {
 	topic: Topic;
@@ -31,16 +31,15 @@ function here(item: Subtopic, kind: Kind, slug?: string) {
 <aside class="sidebar">
 	<p class="topic-name">{topic.title}</p>
 	<ul class="subtopics">
-		{
-			topic.subtopics.map((item) =>
-				item.slug === "quiz" ? (
-					<li class:list={{ current: quiz === "topic" }}>
-						<a class="quiz-link" href={`/${topic.slug}/quiz`}>
-							<ListChecks size={16} aria-hidden="true" />
-							<span>Quiz</span>
-						</a>
-					</li>
-				) : (
+		{topic.subtopics.map((item) =>
+			item.slug === "quiz" ? (
+				<li class:list={{ current: quiz === "topic" }}>
+					<a class="quiz-link" href={`/${topic.slug}/quiz`}>
+						<ListChecks size={16} aria-hidden="true" />
+						<span>Quiz</span>
+					</a>
+				</li>
+			) : (
 				<li>
 					<details open={item.slug === subtopic.slug}>
 						<summary>{item.title}</summary>
@@ -96,8 +95,7 @@ function here(item: Subtopic, kind: Kind, slug?: string) {
 						</ul>
 					</details>
 				</li>
-				),
-			)
-		}
+			),
+		)}
 	</ul>
 </aside>

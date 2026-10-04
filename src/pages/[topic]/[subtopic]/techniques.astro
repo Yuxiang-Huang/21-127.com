@@ -22,35 +22,35 @@ const topic = found?.topic;
 const subtopic = found?.subtopic;
 ---
 
-<Layout title={subtopic ? `Techniques · ${subtopic.title} · 21-127` : "Not found"}>
-	{
-		topic && subtopic && techniques.length > 0 ? (
-			<div class="library reading">
-				<LibrarySidebar
-					topic={topic}
-					subtopic={subtopic}
-					currentKind="techniques"
-				/>
-				<article class="article">
-					<h1>Techniques</h1>
-					{subtopic.leads.techniques && (
-						<div class="prose kind-lead" set:html={subtopic.leads.techniques} />
-					)}
-					{techniques.map((entry) => (
-						<section class="definition" id={entry.slug}>
-							<h2>{entry.title}</h2>
-							<div class="prose" set:html={entry.html} />
-							<Solution html={entry.solutionHtml} />
-						</section>
-					))}
-				</article>
-			</div>
-		) : (
-			<p class="missing">Not found.</p>
-		)
-	}
+<Layout
+	title={subtopic ? `Techniques · ${subtopic.title} · 21-127` : "Not found"}
+>
+	{topic && subtopic && techniques.length > 0 ? (
+		<div class="library reading">
+			<LibrarySidebar
+				topic={topic}
+				subtopic={subtopic}
+				currentKind="techniques"
+			/>
+			<article class="article">
+				<h1>Techniques</h1>
+				{subtopic.leads.techniques && (
+					<div class="prose kind-lead" set:html={subtopic.leads.techniques} />
+				)}
+				{techniques.map((entry) => (
+					<section class="definition" id={entry.slug}>
+						<h2>{entry.title}</h2>
+						<div class="prose" set:html={entry.html} />
+						<Solution html={entry.solutionHtml} />
+					</section>
+				))}
+			</article>
+		</div>
+	) : (
+		<p class="missing">Not found.</p>
+	)}
 </Layout>
 
 <script>
-	import "katex/contrib/copy-tex";
+import "katex/contrib/copy-tex";
 </script>

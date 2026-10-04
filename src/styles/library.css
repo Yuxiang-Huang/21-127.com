@@ -8,10 +8,7 @@
 	background: var(--bg);
 	color: var(--ink);
 	min-height: calc(100vh - 3.25rem);
-	font-family:
-		"Segoe UI",
-		"Helvetica Neue",
-		sans-serif;
+	font-family: "Segoe UI", "Helvetica Neue", sans-serif;
 }
 
 .home {
@@ -108,6 +105,7 @@ body:has(.reading) {
 	display: flex;
 	flex-direction: column;
 	height: 100vh;
+	/* biome-ignore lint/suspicious/noDuplicateProperties: fallback for browsers without dvh */
 	height: 100dvh;
 	overflow: hidden;
 }

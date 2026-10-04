@@ -24,16 +24,17 @@ const subtopic = found?.subtopic;
 ---
 
 <Layout title={subtopic ? `${subtopic.title} quiz · 21-127` : "Not found"}>
-	{
-		topic && subtopic && entries.length > 0 ? (
-			<div class="library reading">
-				<LibrarySidebar topic={topic} subtopic={subtopic} quiz="subtopic" />
-				<article class="article">
-					<Recall heading={`${subtopic.title} quiz`} cards={entries.map(recallCard)} />
-				</article>
-			</div>
-		) : (
-			<p class="missing">Not found.</p>
-		)
-	}
+	{topic && subtopic && entries.length > 0 ? (
+		<div class="library reading">
+			<LibrarySidebar topic={topic} subtopic={subtopic} quiz="subtopic" />
+			<article class="article">
+				<Recall
+					heading={`${subtopic.title} quiz`}
+					cards={entries.map(recallCard)}
+				/>
+			</article>
+		</div>
+	) : (
+		<p class="missing">Not found.</p>
+	)}
 </Layout>

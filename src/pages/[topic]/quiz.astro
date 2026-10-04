@@ -3,7 +3,11 @@ import "katex/dist/katex.min.css";
 import LibrarySidebar from "../../components/LibrarySidebar.astro";
 import Recall from "../../components/Recall.astro";
 import Layout from "../../layouts/Layout.astro";
-import { catalog, getSubtopic, topicRecallEntries } from "../../lib/library/load";
+import {
+	catalog,
+	getSubtopic,
+	topicRecallEntries,
+} from "../../lib/library/load";
 import { recallCard } from "../../lib/library/recall";
 import "../../styles/library.css";
 
@@ -20,16 +24,17 @@ const subtopic = found?.subtopic;
 ---
 
 <Layout title={topic ? `${topic.title} quiz · 21-127` : "Not found"}>
-	{
-		topic && subtopic && entries.length > 0 ? (
-			<div class="library reading">
-				<LibrarySidebar topic={topic} subtopic={subtopic} quiz="topic" />
-				<article class="article">
-					<Recall heading={`${topic.title} quiz`} cards={entries.map(recallCard)} />
-				</article>
-			</div>
-		) : (
-			<p class="missing">Not found.</p>
-		)
-	}
+	{topic && subtopic && entries.length > 0 ? (
+		<div class="library reading">
+			<LibrarySidebar topic={topic} subtopic={subtopic} quiz="topic" />
+			<article class="article">
+				<Recall
+					heading={`${topic.title} quiz`}
+					cards={entries.map(recallCard)}
+				/>
+			</article>
+		</div>
+	) : (
+		<p class="missing">Not found.</p>
+	)}
 </Layout>

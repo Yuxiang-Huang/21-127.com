@@ -33,43 +33,41 @@ const entry = found?.entry;
 ---
 
 <Layout title={entry ? `${entry.title} · 21-127` : "Not found"}>
-	{
-		entry && topic && subtopic ? (
-			<div class="library reading">
-				<LibrarySidebar
-					topic={topic}
-					subtopic={subtopic}
-					currentKind={entry.kind}
-					currentSlug={entry.slug}
-				/>
-				<article class="article">
-					<h1>{entry.title}</h1>
-					{entry.inlineProblems ? (
-						<div class="prose">
-							<div set:html={entry.html} />
-							<ol>
-								{entry.inlineProblems.map((item) => (
-									<li>
-										<div set:html={item.promptHtml} />
-										<Solution html={item.solutionHtml} />
-									</li>
-								))}
-							</ol>
-						</div>
-					) : (
-						<>
-							<div class="prose" set:html={entry.html} />
-							<Solution html={entry.solutionHtml} />
-						</>
-					)}
-				</article>
-			</div>
-		) : (
-			<p class="missing">Not found.</p>
-		)
-	}
+	{entry && topic && subtopic ? (
+		<div class="library reading">
+			<LibrarySidebar
+				topic={topic}
+				subtopic={subtopic}
+				currentKind={entry.kind}
+				currentSlug={entry.slug}
+			/>
+			<article class="article">
+				<h1>{entry.title}</h1>
+				{entry.inlineProblems ? (
+					<div class="prose">
+						<div set:html={entry.html} />
+						<ol>
+							{entry.inlineProblems.map((item) => (
+								<li>
+									<div set:html={item.promptHtml} />
+									<Solution html={item.solutionHtml} />
+								</li>
+							))}
+						</ol>
+					</div>
+				) : (
+					<>
+						<div class="prose" set:html={entry.html} />
+						<Solution html={entry.solutionHtml} />
+					</>
+				)}
+			</article>
+		</div>
+	) : (
+		<p class="missing">Not found.</p>
+	)}
 </Layout>
 
 <script>
-	import "katex/contrib/copy-tex";
+import "katex/contrib/copy-tex";
 </script>

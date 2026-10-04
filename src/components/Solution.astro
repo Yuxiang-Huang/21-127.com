@@ -14,16 +14,14 @@ const prompt =
 		: "Sign in to view the solution";
 ---
 
-{
-	html &&
-		(isAuthenticated ? (
-			<details class="solution">
-				<summary>{label}</summary>
-				<div class="prose" set:html={html} />
-			</details>
-		) : (
-			<div class="solution">
-				<SignInButton mode="modal">{prompt}</SignInButton>
-			</div>
-		))
-}
+{html &&
+	(isAuthenticated ? (
+		<details class="solution">
+			<summary>{label}</summary>
+			<div class="prose" set:html={html} />
+		</details>
+	) : (
+		<div class="solution">
+			<SignInButton mode="modal">{prompt}</SignInButton>
+		</div>
+	))}

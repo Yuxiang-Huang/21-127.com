@@ -1,8 +1,8 @@
 ---
 import { Show } from "@clerk/astro/components";
+import source from "../../21-127.com-data/introduction.tex?raw";
 import Layout from "../layouts/Layout.astro";
 import { getInterestCount, hasInterest } from "../lib/interest";
-import source from "../../21-127.com-data/introduction.tex?raw";
 import { catalog, subtopicPath } from "../lib/library/load";
 import { renderTex } from "../lib/library/render";
 import "../styles/library.css";
@@ -30,28 +30,26 @@ const upcoming = ["Logics", "Sets", "Inductions"];
 					</li>
 				</ul>
 			</article>
-			{
-				upcoming.map((title) => (
-					<article class="card">
-						<h2>{title}</h2>
-						<p class="coming">Coming on Fall Break</p>
-					</article>
-				))
-			}
-			{
-				catalog.topics.map((topic) => (
-					<article class="card">
-						<h2>{topic.title}</h2>
-						<ul>
-							{topic.subtopics.map((subtopic) => (
-								<li>
-									<a href={subtopicPath(topic.slug, subtopic)}>{subtopic.title}</a>
-								</li>
-							))}
-						</ul>
-					</article>
-				))
-			}
+			{upcoming.map((title) => (
+				<article class="card">
+					<h2>{title}</h2>
+					<p class="coming">Coming on Fall Break</p>
+				</article>
+			))}
+			{catalog.topics.map((topic) => (
+				<article class="card">
+					<h2>{topic.title}</h2>
+					<ul>
+						{topic.subtopics.map((subtopic) => (
+							<li>
+								<a href={subtopicPath(topic.slug, subtopic)}>
+									{subtopic.title}
+								</a>
+							</li>
+						))}
+					</ul>
+				</article>
+			))}
 		</div>
 		<section class="interest">
 			<p class="lede">

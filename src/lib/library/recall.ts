@@ -73,7 +73,8 @@ export function questionPieces(source: string): RecallPiece[] {
 		const token = nextListToken(source, i);
 		const raw = token ? source.slice(i, token.at) : source.slice(i);
 		const text = token ? raw.trimEnd() : raw;
-		if (text.trim() !== "") pieces.push({ kind: "text", html: renderQuestionText(text) });
+		if (text.trim() !== "")
+			pieces.push({ kind: "text", html: renderQuestionText(text) });
 		if (!token) break;
 		pieces.push({ kind: token.kind });
 		i = token.at + token.length;
@@ -86,8 +87,11 @@ function nextListToken(
 	source: string,
 	from: number,
 ): { at: number; length: number; kind: "list" | "item" | "list-end" } | null {
-	let found: { at: number; length: number; kind: "list" | "item" | "list-end" } | null =
-		null;
+	let found: {
+		at: number;
+		length: number;
+		kind: "list" | "item" | "list-end";
+	} | null = null;
 	for (const [token, kind] of LIST_TOKENS) {
 		const at = source.indexOf(token, from);
 		if (at < 0) continue;

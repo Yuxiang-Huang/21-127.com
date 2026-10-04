@@ -23,31 +23,29 @@ const subtopic = found?.subtopic;
 ---
 
 <Layout title={subtopic ? `${subtopic.title} · 21-127` : "Not found"}>
-	{
-		topic && subtopic && definitions.length > 0 ? (
-			<div class="library reading">
-				<LibrarySidebar
-					topic={topic}
-					subtopic={subtopic}
-					currentKind="definitions"
-				/>
-				<article class="article">
-					<h1>{subtopic.title}</h1>
-					{definitions.map((entry) => (
-						<section class="definition" id={entry.slug}>
-							<h2>{entry.title}</h2>
-							<div class="prose" set:html={entry.html} />
-							<Solution html={entry.solutionHtml} />
-						</section>
-					))}
-				</article>
-			</div>
-		) : (
-			<p class="missing">Not found.</p>
-		)
-	}
+	{topic && subtopic && definitions.length > 0 ? (
+		<div class="library reading">
+			<LibrarySidebar
+				topic={topic}
+				subtopic={subtopic}
+				currentKind="definitions"
+			/>
+			<article class="article">
+				<h1>{subtopic.title}</h1>
+				{definitions.map((entry) => (
+					<section class="definition" id={entry.slug}>
+						<h2>{entry.title}</h2>
+						<div class="prose" set:html={entry.html} />
+						<Solution html={entry.solutionHtml} />
+					</section>
+				))}
+			</article>
+		</div>
+	) : (
+		<p class="missing">Not found.</p>
+	)}
 </Layout>
 
 <script>
-	import "katex/contrib/copy-tex";
+import "katex/contrib/copy-tex";
 </script>

@@ -92,9 +92,7 @@ function extractSection(
 ): { title: string; body: string } {
 	const { body, groups } = extractGroups(source, "\\section*", file);
 	if (groups.length !== 1) {
-		throw new Error(
-			`${file}: expected one \\section*, found ${groups.length}`,
-		);
+		throw new Error(`${file}: expected one \\section*, found ${groups.length}`);
 	}
 	const title = groups[0].replace(/\s+/g, " ").trim();
 	if (!title) throw new Error(`${file}: empty \\section* title`);
@@ -270,7 +268,8 @@ function rewriteTags(tex: string, file: string): string {
 		if (tex.startsWith("\\tag", i) && !/[a-zA-Z]/.test(tex[i + 4] ?? "")) {
 			let j = i + 4;
 			while (tex[j] === " " || tex[j] === "\n" || tex[j] === "\t") j++;
-			if (tex[j] !== "{") throw new Error(`${file}: \\tag is missing its braces`);
+			if (tex[j] !== "{")
+				throw new Error(`${file}: \\tag is missing its braces`);
 			const group = readBraces(tex, j, file);
 			out += tagReplacement(group.inner, file);
 			i = group.next;
@@ -484,7 +483,10 @@ class Parser {
 			return this.parseControlSymbol(ch);
 		}
 		const start = this.i;
-		while (this.i < this.src.length && /[a-zA-Z]/.test(this.src[this.i] ?? "")) {
+		while (
+			this.i < this.src.length &&
+			/[a-zA-Z]/.test(this.src[this.i] ?? "")
+		) {
 			this.i++;
 		}
 		const name = this.src.slice(start, this.i);
