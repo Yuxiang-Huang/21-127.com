@@ -12,6 +12,7 @@ export type Kind = (typeof KINDS)[number]["id"];
 
 export type Entry = {
 	topic: string;
+	subtopic: string;
 	kind: Kind;
 	slug: string;
 	title: string;
@@ -19,10 +20,16 @@ export type Entry = {
 	solutionHtml: string | null;
 };
 
-export type Topic = {
+export type Subtopic = {
 	slug: string;
 	title: string;
 	kinds: Record<Kind, Entry[]>;
+};
+
+export type Topic = {
+	slug: string;
+	title: string;
+	subtopics: Subtopic[];
 };
 
 export type Catalog = {
@@ -40,25 +47,47 @@ export function isKind(value: string): value is Kind {
 	return KINDS.some((kind) => kind.id === value);
 }
 
-export function firstEntry(topic: Topic): Entry {
+export function entryPath(entry: Entry): string {
+	return `/${entry.topic}/${entry.subtopic}/${entry.kind}/${entry.slug}`;
+}
+
+export function firstEntry(subtopic: Subtopic): Entry {
 	for (const kind of KINDS) {
-		const entry = topic.kinds[kind.id][0];
+		const entry = subtopic.kinds[kind.id][0];
 		if (entry) return entry;
 	}
-	throw new Error(`${topic.slug} has no entries`);
+	throw new Error(`${subtopic.slug} has no entries`);
 }
 
 export function getEntry(
 	catalog: Catalog,
 	topicSlug: string,
+	subtopicSlug: string,
 	kind: string,
 	slug: string,
-): { topic: Topic; entry: Entry } | undefined {
+): { topic: Topic; subtopic: Subtopic; entry: Entry } | undefined {
 	const topic = catalog.topics.find((item) => item.slug === topicSlug);
 	if (!topic || !isKind(kind)) return undefined;
-	const entry = topic.kinds[kind].find((item) => item.slug === slug);
+	const subtopic = topic.subtopics.find((item) => item.slug === subtopicSlug);
+	if (!subtopic) return undefined;
+	const entry = subtopic.kinds[kind].find((item) => item.slug === slug);
 	if (!entry) return undefined;
-	return { topic, entry };
+	return { topic, subtopic, entry };
+}
+
+export function findEntry(
+	catalog: Catalog,
+	topicSlug: string,
+	kind: string,
+	slug: string,
+): Entry | undefined {
+	const topic = catalog.topics.find((item) => item.slug === topicSlug);
+	if (!topic || !isKind(kind)) return undefined;
+	for (const subtopic of topic.subtopics) {
+		const entry = subtopic.kinds[kind].find((item) => item.slug === slug);
+		if (entry) return entry;
+	}
+	return undefined;
 }
 
 export function assembleCatalog(files: SourceFile[]): Catalog {
@@ -137,46 +166,115 @@ function readTopic(
 		throw new Error(`${file}: title must be a non-empty string`);
 	}
 	const extra = Object.keys(doc).filter(
-		(key) => key !== "title" && !isKind(key),
+		(key) => key !== "title" && key !== "subtopics",
 	);
 	if (extra.length > 0) {
 		throw new Error(`${file}: unknown keys ${extra.join(", ")}`);
 	}
+	if (!Array.isArray(doc.subtopics) || doc.subtopics.length === 0) {
+		throw new Error(`${file}: subtopics must be a non-empty list`);
+	}
+
+	const seenSubtopics = new Set<string>();
+	const seenInKind = Object.fromEntries(
+		KINDS.map((kind) => [kind.id, new Set<string>()]),
+	) as Record<Kind, Set<string>>;
+
+	const subtopics = doc.subtopics.map((item, index) =>
+		readSubtopic(slug, file, index, item, tex, usedTex, seenSubtopics, seenInKind),
+	);
+
+	return { slug, title: title.trim(), subtopics };
+}
+
+function readSubtopic(
+	topicSlug: string,
+	file: string,
+	index: number,
+	value: unknown,
+	tex: Map<string, string>,
+	usedTex: Set<string>,
+	seenSubtopics: Set<string>,
+	seenInKind: Record<Kind, Set<string>>,
+): Subtopic {
+	const where = `${file}: subtopics[${index}]`;
+	const doc = asRecord(value, where);
+	const slug = doc.slug;
+	if (typeof slug !== "string" || !SLUG.test(slug)) {
+		throw new Error(`${where}: slug must be a slug`);
+	}
+	if (seenSubtopics.has(slug)) {
+		throw new Error(`${file}: duplicate subtopic slug ${slug}`);
+	}
+	seenSubtopics.add(slug);
+	const title = doc.title;
+	if (typeof title !== "string" || title.trim() === "") {
+		throw new Error(`${where}: title must be a non-empty string`);
+	}
+	const extra = Object.keys(doc).filter(
+		(key) => key !== "slug" && key !== "title" && !isKind(key),
+	);
+	if (extra.length > 0) {
+		throw new Error(`${where}: unknown keys ${extra.join(", ")}`);
+	}
 
 	const kinds = {} as Record<Kind, Entry[]>;
 	for (const kind of KINDS) {
-		const list = doc[kind.id];
-		if (!Array.isArray(list)) {
-			throw new Error(`${file}: ${kind.id} must be a list of slugs`);
-		}
-		const seen = new Set<string>();
-		kinds[kind.id] = list.map((entrySlug) => {
-			if (typeof entrySlug !== "string" || !SLUG.test(entrySlug)) {
-				throw new Error(`${file}: invalid slug in ${kind.id}`);
-			}
-			if (seen.has(entrySlug)) {
-				throw new Error(`${file}: duplicate slug ${entrySlug}`);
-			}
-			seen.add(entrySlug);
-			const texPath = `${slug}/${kind.id}/${entrySlug}.tex`;
-			const source = tex.get(texPath);
-			if (source === undefined) {
-				throw new Error(`${file}: missing tex file ${texPath}`);
-			}
-			usedTex.add(texPath);
-			const rendered = renderTex(source, texPath);
-			return {
-				topic: slug,
-				kind: kind.id,
-				slug: entrySlug,
-				title: rendered.title,
-				html: rendered.html,
-				solutionHtml: rendered.solutionHtml,
-			};
-		});
+		kinds[kind.id] = readKindList(
+			topicSlug,
+			slug,
+			kind.id,
+			doc[kind.id],
+			`${where}: ${kind.id}`,
+			file,
+			tex,
+			usedTex,
+			seenInKind[kind.id],
+		);
 	}
 
 	return { slug, title: title.trim(), kinds };
+}
+
+function readKindList(
+	topicSlug: string,
+	subtopicSlug: string,
+	kind: Kind,
+	value: unknown,
+	where: string,
+	file: string,
+	tex: Map<string, string>,
+	usedTex: Set<string>,
+	seen: Set<string>,
+): Entry[] {
+	if (!Array.isArray(value)) {
+		throw new Error(`${where} must be a list of slugs`);
+	}
+	return value.map((entrySlug) => {
+		if (typeof entrySlug !== "string" || !SLUG.test(entrySlug)) {
+			throw new Error(`${where}: invalid slug`);
+		}
+		if (seen.has(entrySlug)) {
+			throw new Error(`${file}: duplicate slug ${entrySlug} in ${kind}`);
+		}
+		seen.add(entrySlug);
+		const texPath = `${topicSlug}/${kind}/${entrySlug}.tex`;
+		const source = tex.get(texPath);
+		if (source === undefined) {
+			throw new Error(`${file}: missing tex file ${texPath}`);
+		}
+		usedTex.add(texPath);
+		const rendered = renderTex(source, texPath);
+		return {
+			topic: topicSlug,
+			subtopic: subtopicSlug,
+			kind,
+			slug: entrySlug,
+			title: rendered.title,
+			html: rendered.html,
+			solutionHtml: rendered.solutionHtml,
+		};
+	});
 }
 
 function asRecord(value: unknown, file: string): Record<string, unknown> {

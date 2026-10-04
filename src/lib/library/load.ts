@@ -34,5 +34,12 @@ export const catalog = assembleCatalog([
 	...filesFrom(yamlModules),
 ]);
 
-export { firstEntry, getEntry, isKind, KINDS } from "./catalog";
-export type { Catalog, Entry, Kind, Topic } from "./catalog";
+export {
+	entryPath,
+	findEntry,
+	firstEntry,
+	getEntry,
+	isKind,
+	KINDS,
+} from "./catalog";
+export type { Catalog, Entry, Kind, Subtopic, Topic } from "./catalog";

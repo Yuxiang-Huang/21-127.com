@@ -21,15 +21,19 @@ CMU Concepts of Mathematics. The catalog course this site is about, shaped aroun
 _Avoid_: offering, class
 
 **Topic**:
-A named cluster of Definitions, Techniques, Theorems, and Problems. The Topic, and each item within its kind, has an author-assigned place in the site's order.
+A named, ordered cluster of Subtopics.
 _Avoid_: week, unit, chapter, tab, section
+
+**Subtopic**:
+A named part of one Topic, holding the Definitions, Techniques, Theorems, and Problems that belong together. The Subtopic, and each item within its kind, has an author-assigned place in the Topic's order.
+_Avoid_: section, unit, chapter
 
 **Definition**:
 A named concept and its formal statement.
 _Avoid_: term, word, glossary entry
 
 **Technique**:
-A named way to prove or disprove a statement, filed under the Topic that teaches it.
+A named way to prove or disprove a statement, filed under the Subtopic that teaches it.
 _Avoid_: proof technique, strategy, method
 
 **Theorem**:
@@ -49,7 +53,7 @@ The written worked answer to a Problem.
 _Avoid_: answer key, writeup, proof
 
 **Video**:
-An optional recording attached to a Problem, a Theorem, or a Topic's Definitions or Techniques tab.
+An optional recording attached to a Problem, a Theorem, or a Subtopic's Definitions or Techniques tab.
 _Avoid_: walkthrough, recording
 
 **Drill**:
@@ -63,9 +67,9 @@ A User's site-wide declaration that they want further resources for 21-127. It c
 _Avoid_: Request, vote, signup
 
 **Request**:
-A User's current declaration that they want a Video on a Problem, Theorem, or Topic tab that has none. It can be withdrawn, and it ceases when a Video is attached.
+A User's current declaration that they want a Video on a Problem, Theorem, or Subtopic tab that has none. It can be withdrawn, and it ceases when a Video is attached.
 _Avoid_: interest, vote, wishlist
 
 **Feedback**:
-A User's thumbs-up or thumbs-down on a Problem, Theorem, or Topic tab. At most one per User per target; it can be switched or withdrawn.
+A User's thumbs-up or thumbs-down on a Problem, Theorem, or Subtopic tab. At most one per User per target; it can be switched or withdrawn.
 _Avoid_: like, vote, rating, interest

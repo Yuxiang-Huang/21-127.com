@@ -103,10 +103,24 @@
 	padding: 1.1rem 0.9rem 2rem;
 }
 
-.topic-name {
+.home-link {
+	display: inline-block;
 	margin: 0 0.35rem 0.85rem;
+	color: inherit;
+	font-weight: 650;
+	text-decoration: none;
+}
+
+.topic-name {
+	margin: 0 0.35rem 0.35rem;
 	font-size: 0.95rem;
 	font-weight: 650;
+}
+
+.subtopics {
+	list-style: none;
+	margin: 0 0 0.85rem;
+	padding: 0;
 }
 
 .sidebar details {

@@ -2,18 +2,19 @@
 
 Unofficial supplemental resources for CMU 21-127 Concepts of Mathematics. Not a replacement for lectures or recitations. Written to Gregory Johnson's presentation; usable for other offerings. See [CONTEXT.md](CONTEXT.md).
 
-Topics are the spine: previous/next and a navbar. Each Topic has four tabs — Definitions, Techniques, Theorems, and Problems. A Topic's Definitions end with a Drill. A signed-in User can Request a missing Video and leave Feedback.
+Topics are the spine: previous/next and a navbar. Each Topic is an ordered list of Subtopics. A Subtopic has four tabs — Definitions, Techniques, Theorems, and Problems. The home page lists Subtopic names. A Topic's Definitions end with a Drill. A signed-in User can Request a missing Video and leave Feedback.
 
 ```mermaid
 flowchart TD
   navbar["Topic navbar and arrows"]
   navbar --> topic[Topic]
-  topic --> defTab["Definitions tab"]
-  topic --> techTab["Techniques tab"]
-  topic --> thmTab["Theorems tab"]
-  topic --> probTab["Problems tab"]
+  topic --> subtopic[Subtopic]
+  topic --> drill[Drill]
+  subtopic --> defTab["Definitions tab"]
+  subtopic --> techTab["Techniques tab"]
+  subtopic --> thmTab["Theorems tab"]
+  subtopic --> probTab["Problems tab"]
   defTab --> definitions[Definitions]
-  defTab --> drill[Drill]
   defTab --> tabSignals["Request, Feedback, optional Video"]
   techTab --> techniques["Techniques taught here"]
   techniques --> tagged["Tagged Problems"]
