@@ -31,14 +31,13 @@
 }
 
 .cards {
-	display: flex;
-	flex-wrap: wrap;
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
 	gap: 1rem;
-	align-items: flex-start;
+	align-items: start;
 }
 
 .card {
-	width: min(100%, 22rem);
 	background: #fff;
 	border: 1px solid var(--line);
 	border-radius: 8px;
@@ -78,7 +77,6 @@
 }
 
 .interest {
-	max-width: 38rem;
 	margin-top: 2.5rem;
 	padding-top: 1.5rem;
 	border-top: 1px solid var(--line);
@@ -272,16 +270,23 @@ body:has(.reading) > .site-header {
 
 .solution {
 	max-width: 60rem;
-	margin-top: 1.75rem;
-	border-top: 1px solid var(--line);
-	padding-top: 0.85rem;
+	margin: 0.45rem 0 0.15rem;
+	padding: 0.1rem 0 0.1rem 0.85rem;
+	border-left: 2px solid var(--line);
+	font-family: Georgia, "Iowan Old Style", serif;
+	font-size: 1.05rem;
+	line-height: 1.65;
 }
 
 .solution summary {
 	cursor: pointer;
 	color: inherit;
 	font-weight: 650;
-	margin-bottom: 0.75rem;
+	margin-bottom: 0;
+}
+
+.solution[open] summary {
+	margin-bottom: 0.65rem;
 }
 
 .solution button {
@@ -304,27 +309,17 @@ body:has(.reading) > .site-header {
 }
 
 .prose li:has(.solution) {
-	margin-bottom: 1rem;
-}
-
-.prose .solution {
-	max-width: none;
-	margin: 0.45rem 0 0.15rem;
-	border-top: 0;
-	padding: 0.1rem 0 0.1rem 0.85rem;
-	border-left: 2px solid var(--line);
-}
-
-.prose .solution summary {
-	margin-bottom: 0;
-}
-
-.prose .solution[open] summary {
-	margin-bottom: 0.65rem;
+	margin-bottom: 2.75rem;
 }
 
 .missing {
 	padding: 3rem 1.5rem;
+}
+
+@media (max-width: 640px) {
+	.cards {
+		grid-template-columns: 1fr;
+	}
 }
 
 @media (max-width: 800px) {
