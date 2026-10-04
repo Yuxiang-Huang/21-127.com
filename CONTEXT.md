@@ -21,16 +21,16 @@ CMU Concepts of Mathematics. The catalog course this site is about, shaped aroun
 _Avoid_: offering, class
 
 **Topic**:
-A named cluster of Definitions, Proof techniques, Theorems, and Problems, with an author-assigned place in the site's order.
+A named cluster of Definitions, Techniques, Theorems, and Problems, with an author-assigned place in the site's order.
 _Avoid_: week, unit, chapter, tab, section
 
 **Definition**:
 A named concept and its formal statement.
 _Avoid_: term, word, glossary entry
 
-**Proof technique**:
-A named method of proof. It is global: contradiction is one Proof technique, not one per Topic.
-_Avoid_: strategy, method
+**Technique**:
+A named way to prove or disprove a statement, filed under the Topic that teaches it.
+_Avoid_: proof technique, strategy, method
 
 **Theorem**:
 A named claim, including what other texts call a lemma, corollary, or proposition.
@@ -41,7 +41,7 @@ The written argument that a Theorem holds.
 _Avoid_: solution, writeup
 
 **Problem**:
-A prompt the reader is meant to attempt, tagged with the Proof techniques it uses.
+A prompt the reader is meant to attempt, tagged with the Techniques it uses.
 _Avoid_: exercise, homework, question
 
 **Solution**:
@@ -49,7 +49,7 @@ The written worked answer to a Problem.
 _Avoid_: answer key, writeup, proof
 
 **Video**:
-An optional recording attached to a Problem, a Theorem, or a Topic's Definitions or Proof techniques tab.
+An optional recording attached to a Problem, a Theorem, or a Topic's Definitions or Techniques tab.
 _Avoid_: walkthrough, recording
 
 **Drill**:
