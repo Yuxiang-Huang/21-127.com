@@ -473,7 +473,7 @@ class Parser {
 			name === "url"
 				? escapeHtml(url)
 				: new Parser(this.readBalanced(), this.file).renderInlines();
-		return `<a href="${escapeHtml(url)}">${label}</a>`;
+		return `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${label}</a>`;
 	}
 
 	private readUrl(): string {
