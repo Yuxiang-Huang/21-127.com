@@ -20,6 +20,12 @@
 	padding: 2.5rem 1.5rem 4rem;
 }
 
+.home h1 {
+	margin: 0 0 1.5rem;
+	font-size: 1.75rem;
+	font-weight: 650;
+}
+
 .essay {
 	max-width: 48rem;
 	margin: 0 auto;
@@ -80,12 +86,6 @@
 	margin-top: 2.5rem;
 	padding-top: 1.5rem;
 	border-top: 1px solid var(--line);
-}
-
-.interest h2 {
-	font-size: 1.35rem;
-	font-weight: 650;
-	margin: 0 0 0.75rem;
 }
 
 .interest .lede {
