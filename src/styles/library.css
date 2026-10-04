@@ -212,6 +212,10 @@ body:has(.reading) > .site-header {
 	font-weight: 500;
 }
 
+.kind-lead {
+	margin-bottom: 1.75rem;
+}
+
 .definition {
 	scroll-margin-top: 1rem;
 }

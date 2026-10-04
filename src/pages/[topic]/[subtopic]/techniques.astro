@@ -33,6 +33,9 @@ const subtopic = found?.subtopic;
 				/>
 				<article class="article">
 					<h1>Techniques</h1>
+					{subtopic.leads.techniques && (
+						<div class="prose kind-lead" set:html={subtopic.leads.techniques} />
+					)}
 					{techniques.map((entry) => (
 						<section class="definition" id={entry.slug}>
 							<h2>{entry.title}</h2>

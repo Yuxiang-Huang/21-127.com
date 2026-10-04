@@ -1,6 +1,6 @@
 import { parse } from "yaml";
 import { parseQuestion, type Question } from "./atoms";
-import { renderTex } from "./render";
+import { renderFragment, renderTex } from "./render";
 
 export type { Question };
 
@@ -29,6 +29,7 @@ export type Entry = {
 export type Subtopic = {
 	slug: string;
 	title: string;
+	leads: Partial<Record<Kind, string>>;
 	kinds: Record<Kind, Entry[]>;
 };
 
@@ -248,6 +249,7 @@ function readTopic(
 	subtopics.push({
 		slug: "quiz",
 		title: "Quiz",
+		leads: {},
 		kinds: { definitions: [], techniques: [], theorems: [], problems: [] },
 	});
 
@@ -281,11 +283,13 @@ function readSubtopic(
 		throw new Error(`${where}: title must be a non-empty string`);
 	}
 	const extra = Object.keys(doc).filter(
-		(key) => key !== "slug" && key !== "title" && !isKind(key),
+		(key) =>
+			key !== "slug" && key !== "title" && key !== "leads" && !isKind(key),
 	);
 	if (extra.length > 0) {
 		throw new Error(`${where}: unknown keys ${extra.join(", ")}`);
 	}
+	const leads = readLeads(doc.leads, where);
 
 	const kinds = {} as Record<Kind, Entry[]>;
 	for (const kind of KINDS) {
@@ -304,7 +308,26 @@ function readSubtopic(
 		);
 	}
 
-	return { slug, title: title.trim(), kinds };
+	return { slug, title: title.trim(), leads, kinds };
+}
+
+function readLeads(
+	value: unknown,
+	where: string,
+): Partial<Record<Kind, string>> {
+	if (value === undefined) return {};
+	const doc = asRecord(value, `${where}: leads`);
+	const leads: Partial<Record<Kind, string>> = {};
+	for (const [key, text] of Object.entries(doc)) {
+		if (!isKind(key)) {
+			throw new Error(`${where}: leads.${key} is not a kind`);
+		}
+		if (typeof text !== "string" || text.trim() === "") {
+			throw new Error(`${where}: leads.${key} must be a non-empty string`);
+		}
+		leads[key] = `<p>${renderFragment(text.trim())}</p>`;
+	}
+	return leads;
 }
 
 function readKindList(
