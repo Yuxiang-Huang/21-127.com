@@ -316,6 +316,102 @@ body:has(.reading) > .site-header {
 	padding: 3rem 1.5rem;
 }
 
+.sidebar .quiz-link {
+	font-weight: 650;
+}
+
+.recall-lead,
+.recall-progress,
+.recall-result {
+	color: var(--muted);
+}
+
+.recall-difficulties,
+.recall-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+}
+
+.recall button,
+.recall-yuxiang textarea {
+	font: inherit;
+}
+
+.recall-difficulties button,
+.recall-actions button,
+.recall [data-again] {
+	border: 1px solid var(--line);
+	border-radius: 6px;
+	background: #fff;
+	padding: 0.4rem 0.75rem;
+	cursor: pointer;
+}
+
+.recall-statement {
+	font-family: Georgia, "Iowan Old Style", serif;
+	font-size: 1.05rem;
+	line-height: 1.7;
+	white-space: pre-wrap;
+}
+
+.recall-statement .katex-mathml {
+	pointer-events: none;
+}
+
+.recall-actions {
+	position: relative;
+	z-index: 1;
+	margin-top: 1rem;
+}
+
+.recall-statement .blank {
+	display: inline-flex;
+	flex-wrap: wrap;
+	gap: 0.35rem;
+	margin: 0.15rem 0.2rem;
+	vertical-align: middle;
+}
+
+.recall-statement .blank label {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.25rem;
+	border: 1px solid var(--line);
+	border-radius: 6px;
+	padding: 0.1rem 0.4rem;
+	background: #fff;
+}
+
+.recall-statement .blank.right label:has(input:checked) {
+	border-color: #15803d;
+	background: #f0fdf4;
+}
+
+.recall-statement .blank.wrong label:has(input:checked) {
+	border-color: #b91c1c;
+	background: #fef2f2;
+}
+
+.recall-yuxiang {
+	display: grid;
+	gap: 0.4rem;
+	max-width: 40rem;
+	margin: 1rem 0;
+}
+
+.recall-yuxiang textarea {
+	width: 100%;
+	padding: 0.6rem 0.7rem;
+	border: 1px solid var(--line);
+	border-radius: 6px;
+}
+
+.recall-score {
+	font-family: Georgia, "Iowan Old Style", serif;
+	font-size: 2rem;
+}
+
 @media (max-width: 640px) {
 	.cards {
 		grid-template-columns: 1fr;

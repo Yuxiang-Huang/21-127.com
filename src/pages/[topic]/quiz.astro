@@ -23,7 +23,7 @@ const subtopic = found?.subtopic;
 	{
 		topic && subtopic && entries.length > 0 ? (
 			<div class="library reading">
-				<LibrarySidebar topic={topic} subtopic={subtopic} recall="quiz" />
+				<LibrarySidebar topic={topic} subtopic={subtopic} quiz="topic" />
 				<article class="article">
 					<Recall heading={`${topic.title} quiz`} cards={entries.map(recallCard)} />
 				</article>

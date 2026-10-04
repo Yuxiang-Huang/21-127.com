@@ -14,10 +14,10 @@ interface Props {
 	subtopic: Subtopic;
 	currentKind?: Kind;
 	currentSlug?: string;
-	recall?: "drill" | "quiz";
+	quiz?: "subtopic" | "topic";
 }
 
-const { topic, subtopic, currentKind, currentSlug, recall } = Astro.props;
+const { topic, subtopic, currentKind, currentSlug, quiz } = Astro.props;
 
 function here(item: Subtopic, kind: Kind, slug?: string) {
 	return (
@@ -34,7 +34,7 @@ function here(item: Subtopic, kind: Kind, slug?: string) {
 		{
 			topic.subtopics.map((item) =>
 				item.slug === "quiz" ? (
-					<li class:list={{ current: recall === "quiz" }}>
+					<li class:list={{ current: quiz === "topic" }}>
 						<a class="quiz-link" href={`/${topic.slug}/quiz`}>
 							<ListChecks size={16} aria-hidden="true" />
 							<span>Quiz</span>
@@ -72,12 +72,12 @@ function here(item: Subtopic, kind: Kind, slug?: string) {
 							{recallEntries(item).length > 0 && (
 								<li
 									class:list={{
-										current: recall === "drill" && item.slug === subtopic.slug,
+										current: quiz === "subtopic" && item.slug === subtopic.slug,
 									}}
 								>
-									<a href={`/${topic.slug}/${item.slug}/drill`}>
+									<a href={`/${topic.slug}/${item.slug}/quiz`}>
 										<ListChecks size={16} aria-hidden="true" />
-										<span>Drill</span>
+										<span>Quiz</span>
 									</a>
 								</li>
 							)}
