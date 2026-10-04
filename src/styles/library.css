@@ -463,17 +463,16 @@ body:has(.reading) > .site-header {
 .recall-picker-nav:not([hidden]) {
 	display: flex;
 	align-items: center;
-	justify-content: center;
+	justify-content: flex-start;
 	gap: 0.6rem;
 	margin-bottom: 0.75rem;
 }
 
 .recall-hole {
 	margin: 0;
-	min-width: 7rem;
 	color: var(--muted);
 	font-size: 0.9rem;
-	text-align: center;
+	text-align: left;
 }
 
 .recall-picker-nav button {
