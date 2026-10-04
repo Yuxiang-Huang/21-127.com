@@ -216,7 +216,7 @@ body:has(.reading) > .site-header {
 	font-family: Georgia, "Iowan Old Style", serif;
 	font-size: 1.05rem;
 	line-height: 1.65;
-	max-width: 40rem;
+	max-width: 60rem;
 }
 
 .prose p {
@@ -248,7 +248,7 @@ body:has(.reading) > .site-header {
 }
 
 .solution {
-	max-width: 40rem;
+	max-width: 60rem;
 	margin-top: 1.75rem;
 	border-top: 1px solid var(--line);
 	padding-top: 0.85rem;
