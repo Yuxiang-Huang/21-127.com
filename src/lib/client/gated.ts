@@ -13,20 +13,31 @@ let pending: Promise<GatedPayload | null> | null = null;
 
 export function loadGated(): Promise<GatedPayload | null> {
 	if (pending) return pending;
-	const page = new URLSearchParams({ page: location.pathname });
-	pending = fetch(`/api/gated?${page}`)
-		.then(async (response) => {
-			if (!response.ok) {
-				pending = null;
-				return null;
-			}
-			return (await response.json()) as GatedPayload;
-		})
-		.catch(() => {
-			pending = null;
-			return null;
-		});
+	pending = fetchGated(0);
 	return pending;
+}
+
+async function fetchGated(attempt: number): Promise<GatedPayload | null> {
+	const page = new URLSearchParams({ page: location.pathname });
+	try {
+		const response = await fetch(`/api/gated?${page}`);
+		if (response.ok) return (await response.json()) as GatedPayload;
+		if (response.status === 401 && attempt < 4) {
+			await wait(200 * (attempt + 1));
+			return fetchGated(attempt + 1);
+		}
+	} catch {
+		if (attempt < 4) {
+			await wait(200 * (attempt + 1));
+			return fetchGated(attempt + 1);
+		}
+	}
+	pending = null;
+	return null;
+}
+
+function wait(ms: number) {
+	return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 
 export function revealSolutions(solutions: GatedSolution[]) {

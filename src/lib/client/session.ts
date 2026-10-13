@@ -7,6 +7,7 @@ export type SessionUser = {
 };
 
 type ClerkClient = {
+	loaded?: boolean;
 	user?: SessionUser | null;
 	addListener?: (
 		listener: (resources: { user?: SessionUser | null }) => void,
@@ -42,14 +43,20 @@ function emit(user: SessionUser | null) {
 	for (const fn of listeners) fn(user);
 }
 
+function readyClerk() {
+	const clerk = clerkOn();
+	if (!clerk?.addListener || !clerk.loaded) return null;
+	return clerk;
+}
+
 function ensureBound() {
 	if (current !== undefined || binding) return;
-	const clerk = clerkOn();
-	if (!clerk?.addListener) {
+	const clerk = readyClerk();
+	if (!clerk) {
 		binding = true;
 		const timer = window.setInterval(() => {
-			const ready = clerkOn();
-			if (!ready?.addListener) return;
+			const ready = readyClerk();
+			if (!ready) return;
 			window.clearInterval(timer);
 			ready.addListener(({ user }) => emit(user ?? null));
 			emit(ready.user ?? null);
