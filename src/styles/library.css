@@ -68,11 +68,6 @@ body:has(.home) {
 	color: var(--muted);
 }
 
-.card .coming {
-	margin: 0.35rem 0 0;
-	color: var(--muted);
-}
-
 .card ul {
 	list-style: none;
 	margin: 0;
