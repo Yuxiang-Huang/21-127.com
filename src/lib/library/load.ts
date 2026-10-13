@@ -1,16 +1,20 @@
 import { assembleCatalog } from "./catalog";
 
-const texModules = import.meta.glob("../../../21-127.com-data/**/*.tex", {
-	eager: true,
-	import: "default",
-	query: "?raw",
-});
+const texModules = import.meta.glob(
+	[
+		"../../../21-127.com-data/**/*.tex",
+		"!../../../21-127.com-data/si-handouts/**",
+	],
+	{ eager: true, import: "default", query: "?raw" },
+);
 
-const yamlModules = import.meta.glob("../../../21-127.com-data/**/*.yaml", {
-	eager: true,
-	import: "default",
-	query: "?raw",
-});
+const yamlModules = import.meta.glob(
+	[
+		"../../../21-127.com-data/**/*.yaml",
+		"!../../../21-127.com-data/si-handouts/**",
+	],
+	{ eager: true, import: "default", query: "?raw" },
+);
 
 function filesFrom(modules: Record<string, unknown>) {
 	return Object.entries(modules).map(([key, text]) => {
