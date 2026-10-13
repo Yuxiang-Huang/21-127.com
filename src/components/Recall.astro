@@ -1,116 +1,85 @@
 ---
 import { SignInButton } from "@clerk/astro/components";
 import CircleQuestionMark from "@lucide/astro/icons/circle-question-mark";
-import type { RecallCard } from "../lib/library/recall";
 
 interface Props {
 	heading: string;
-	cards: RecallCard[];
 }
 
-const { heading, cards } = Astro.props;
-const { isAuthenticated } = Astro.locals.auth();
-const payload = JSON.stringify(cards).replaceAll("<", "\\u003c");
+const { heading } = Astro.props;
 ---
 
-{!isAuthenticated && (
-	<>
-		<h1>{heading}</h1>
-		<div class="solution">
-			<SignInButton mode="modal">Sign in to access quiz</SignInButton>
-		</div>
-	</>
-)}
-
-{isAuthenticated && (
-	<div class="recall">
-		<h1>{heading}</h1>
-		<div data-choose>
-			<p class="recall-lead">Choose a difficulty.</p>
-			<div class="recall-difficulties">
-				<button type="button" data-difficulty="easy">
-					Easy
-				</button>
-				<button type="button" data-difficulty="medium">
-					Medium
-				</button>
-				<button type="button" data-difficulty="hard">
-					Hard
-				</button>
-				<button type="button" data-difficulty="mastery">
-					Mastery
-				</button>
-				<span class="recall-yuxiang-option">
-					<button type="button" data-difficulty="yuxiang">
-						Yuxiang
+<h1>{heading}</h1>
+<div class="solution" data-quiz-gate>
+	<SignInButton mode="modal">Sign in to access quiz</SignInButton>
+</div>
+<div class="recall" hidden>
+	<div data-choose>
+		<p class="recall-lead">Choose a difficulty.</p>
+		<div class="recall-difficulties">
+			<button type="button" data-difficulty="easy">Easy</button>
+			<button type="button" data-difficulty="medium">Medium</button>
+			<button type="button" data-difficulty="hard">Hard</button>
+			<button type="button" data-difficulty="mastery">Mastery</button>
+			<span class="recall-yuxiang-option">
+				<button type="button" data-difficulty="yuxiang">Yuxiang</button>
+				<span class="recall-help">
+					<button
+						type="button"
+						class="recall-help-button"
+						aria-label="About Yuxiang"
+						aria-describedby="yuxiang-help"
+					>
+						<CircleQuestionMark size={18} aria-hidden="true" />
 					</button>
-					<span class="recall-help">
-						<button
-							type="button"
-							class="recall-help-button"
-							aria-label="About Yuxiang"
-							aria-describedby="yuxiang-help"
+					<span id="yuxiang-help" class="recall-help-tip" role="tooltip">
+						You LaTeX the entire statement from scratch and are scored on the{" "}
+						<a
+							href="https://en.wikipedia.org/wiki/Cosine_similarity"
+							target="_blank"
+							rel="noopener noreferrer"
 						>
-							<CircleQuestionMark size={18} aria-hidden="true" />
-						</button>
-						<span id="yuxiang-help" class="recall-help-tip" role="tooltip">
-							You LaTeX the entire statement from scratch and are scored on the{" "}
-							<a
-								href="https://en.wikipedia.org/wiki/Cosine_similarity"
-								target="_blank"
-								rel="noopener noreferrer"
-							>
-								cosine similarity
-							</a>{" "}
-							between that and the answer.
-						</span>
+							cosine similarity
+						</a>{" "}
+						between that and the answer.
 					</span>
 				</span>
-			</div>
+			</span>
 		</div>
-		<div data-play hidden>
-			<p class="recall-progress" data-progress />
-			{/* biome-ignore lint/a11y/useHeadingContent: title is filled when a card is shown */}
-			<h2 data-title />
-			<div class="recall-statement" data-statement />
-			<div class="recall-picker" data-picker hidden>
-				<div class="recall-picker-nav" data-nav>
-					<button type="button" data-prev aria-label="Previous blank">
-						←
-					</button>
-					<p class="recall-hole" data-hole />
-					<button type="button" data-forward aria-label="Next blank">
-						→
-					</button>
-				</div>
-				<div class="recall-choices" data-choices />
-			</div>
-			<label class="recall-yuxiang" data-yuxiang hidden>
-				<span>Type the statement in LaTeX.</span>
-				<textarea data-input rows="8" />
-			</label>
-			<p class="recall-result" data-result />
-			<div class="recall-actions">
-				<button type="button" data-check>
-					Check
-				</button>
-				<button type="button" data-next hidden>
-					Next
-				</button>
-			</div>
-		</div>
-		<div data-score hidden>
-			<p class="recall-score" data-score-text />
-			<button type="button" data-again>
-				Start again
-			</button>
-		</div>
-		<script type="application/json" data-cards set:html={payload} />
 	</div>
-)}
+	<div data-play hidden>
+		<p class="recall-progress" data-progress />
+		{/* biome-ignore lint/a11y/useHeadingContent: title is filled when a card is shown */}
+		<h2 data-title />
+		<div class="recall-statement" data-statement />
+		<div class="recall-picker" data-picker hidden>
+			<div class="recall-picker-nav" data-nav>
+				<button type="button" data-prev aria-label="Previous blank">←</button>
+				<p class="recall-hole" data-hole />
+				<button type="button" data-forward aria-label="Next blank">→</button>
+			</div>
+			<div class="recall-choices" data-choices />
+		</div>
+		<label class="recall-yuxiang" data-yuxiang hidden>
+			<span>Type the statement in LaTeX.</span>
+			<textarea data-input rows="8" />
+		</label>
+		<p class="recall-result" data-result />
+		<div class="recall-actions">
+			<button type="button" data-check>Check</button>
+			<button type="button" data-next hidden>Next</button>
+		</div>
+	</div>
+	<div data-score hidden>
+		<p class="recall-score" data-score-text />
+		<button type="button" data-again>Start again</button>
+	</div>
+</div>
 
 <script>
-import { clozeMarks, hideCount } from "../lib/library/recall";
+import { loadGated } from "../lib/client/gated";
+import { onSession } from "../lib/client/session";
+import { clozeMarks, hideCount } from "../lib/library/cloze";
 
 type Choice = { text: string; html: string };
 type Piece =
@@ -142,7 +111,7 @@ const rates: Record<Difficulty, number> = {
 	yuxiang: 1,
 };
 
-function mountRecall() {
+function mountRecall(deck: Card[]) {
 	const root = document.querySelector(".recall");
 	if (!(root instanceof HTMLElement)) return;
 	const choose = root.querySelector("[data-choose]");
@@ -163,8 +132,6 @@ function mountRecall() {
 	const check = root.querySelector("[data-check]");
 	const next = root.querySelector("[data-next]");
 	const scoreText = root.querySelector("[data-score-text]");
-	const raw = root.querySelector("[data-cards]")?.textContent ?? "[]";
-	const deck = JSON.parse(raw) as Card[];
 
 	let order: Card[] = [];
 	let index = 0;
@@ -523,5 +490,17 @@ function mountRecall() {
 	});
 }
 
-mountRecall();
+onSession((user) => {
+	if (!user) return;
+	void loadGated().then((payload) => {
+		const root = document.querySelector(".recall");
+		if (!(root instanceof HTMLElement) || root.dataset.ready === "true") return;
+		if (!payload || payload.cards.length === 0) return;
+		root.dataset.ready = "true";
+		const gate = document.querySelector("[data-quiz-gate]");
+		if (gate instanceof HTMLElement) gate.hidden = true;
+		root.hidden = false;
+		mountRecall(payload.cards as Card[]);
+	});
+});
 </script>

@@ -3,9 +3,15 @@ import "katex/dist/katex.min.css";
 import LibrarySidebar from "../../../components/LibrarySidebar.astro";
 import Recall from "../../../components/Recall.astro";
 import Layout from "../../../layouts/Layout.astro";
-import { catalog, getSubtopic, recallEntries } from "../../../lib/library/load";
-import { recallCard } from "../../../lib/library/recall";
+import { subtopicQuizPaths } from "../../../lib/library/gated";
+import { catalog, getSubtopic } from "../../../lib/library/load";
 import "../../../styles/library.css";
+
+export const prerender = true;
+
+export function getStaticPaths() {
+	return subtopicQuizPaths();
+}
 
 const topicSlug = Astro.params.topic;
 const subtopicSlug = Astro.params.subtopic;
@@ -13,28 +19,17 @@ const found =
 	topicSlug && subtopicSlug
 		? getSubtopic(catalog, topicSlug, subtopicSlug)
 		: undefined;
-const entries = found ? recallEntries(found.subtopic) : [];
-
-if (!found || found.subtopic.slug === "quiz" || entries.length === 0) {
-	Astro.response.status = 404;
+if (!found || found.subtopic.slug === "quiz") {
+	throw new Error(`missing quiz ${topicSlug}/${subtopicSlug}`);
 }
-
-const topic = found?.topic;
-const subtopic = found?.subtopic;
+const { topic, subtopic } = found;
 ---
 
-<Layout title={subtopic ? `${subtopic.title} quiz · 21-127` : "Not found"}>
-	{topic && subtopic && entries.length > 0 ? (
-		<div class="library reading">
-			<LibrarySidebar topic={topic} subtopic={subtopic} quiz="subtopic" />
-			<article class="article">
-				<Recall
-					heading={`${subtopic.title} quiz`}
-					cards={entries.map(recallCard)}
-				/>
-			</article>
-		</div>
-	) : (
-		<p class="missing">Not found.</p>
-	)}
+<Layout title={`${subtopic.title} quiz · 21-127`}>
+	<div class="library reading">
+		<LibrarySidebar topic={topic} subtopic={subtopic} quiz="subtopic" />
+		<article class="article">
+			<Recall heading={`${subtopic.title} quiz`} />
+		</article>
+	</div>
 </Layout>

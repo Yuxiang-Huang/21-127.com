@@ -3,8 +3,15 @@ import "katex/dist/katex.min.css";
 import LibrarySidebar from "../../../components/LibrarySidebar.astro";
 import Solution from "../../../components/Solution.astro";
 import Layout from "../../../layouts/Layout.astro";
+import { kindPaths } from "../../../lib/library/gated";
 import { catalog, getSubtopic } from "../../../lib/library/load";
 import "../../../styles/library.css";
+
+export const prerender = true;
+
+export function getStaticPaths() {
+	return kindPaths("techniques");
+}
 
 const topicSlug = Astro.params.topic;
 const subtopicSlug = Astro.params.subtopic;
@@ -12,43 +19,34 @@ const found =
 	topicSlug && subtopicSlug
 		? getSubtopic(catalog, topicSlug, subtopicSlug)
 		: undefined;
-const techniques = found?.subtopic.kinds.techniques ?? [];
-
-if (!found || techniques.length === 0) {
-	Astro.response.status = 404;
+if (!found || found.subtopic.kinds.techniques.length === 0) {
+	throw new Error(`missing techniques page ${topicSlug}/${subtopicSlug}`);
 }
-
-const topic = found?.topic;
-const subtopic = found?.subtopic;
+const { topic, subtopic } = found;
+const techniques = subtopic.kinds.techniques;
 ---
 
-<Layout
-	title={subtopic ? `Techniques · ${subtopic.title} · 21-127` : "Not found"}
->
-	{topic && subtopic && techniques.length > 0 ? (
-		<div class="library reading">
-			<LibrarySidebar
-				topic={topic}
-				subtopic={subtopic}
-				currentKind="techniques"
-			/>
-			<article class="article">
-				<h1>Techniques</h1>
-				{subtopic.leads.techniques && (
-					<div class="prose kind-lead" set:html={subtopic.leads.techniques} />
-				)}
-				{techniques.map((entry) => (
-					<section class="definition" id={entry.slug}>
-						<h2>{entry.title}</h2>
-						<div class="prose" set:html={entry.html} />
-						<Solution html={entry.solutionHtml} />
-					</section>
-				))}
-			</article>
-		</div>
-	) : (
-		<p class="missing">Not found.</p>
-	)}
+<Layout title={`Techniques · ${subtopic.title} · 21-127`}>
+	<div class="library reading">
+		<LibrarySidebar
+			topic={topic}
+			subtopic={subtopic}
+			currentKind="techniques"
+		/>
+		<article class="article">
+			<h1>Techniques</h1>
+			{subtopic.leads.techniques && (
+				<div class="prose kind-lead" set:html={subtopic.leads.techniques} />
+			)}
+			{techniques.map((entry) => (
+				<section class="definition" id={entry.slug}>
+					<h2>{entry.title}</h2>
+					<div class="prose" set:html={entry.html} />
+					{entry.solutionHtml ? <Solution id={entry.slug} /> : null}
+				</section>
+			))}
+		</article>
+	</div>
 </Layout>
 
 <script>

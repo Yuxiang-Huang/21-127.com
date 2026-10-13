@@ -3,8 +3,22 @@ import "katex/dist/katex.min.css";
 import LibrarySidebar from "../../../../components/LibrarySidebar.astro";
 import Solution from "../../../../components/Solution.astro";
 import Layout from "../../../../layouts/Layout.astro";
-import { catalog, entryPath, getEntry } from "../../../../lib/library/load";
+import { entryPaths } from "../../../../lib/library/gated";
+import { catalog, getEntry } from "../../../../lib/library/load";
 import "../../../../styles/library.css";
+
+export const prerender = true;
+
+export function getStaticPaths() {
+	return entryPaths();
+}
+
+interface Props {
+	redirectTo?: string;
+}
+
+const { redirectTo } = Astro.props;
+if (redirectTo) return Astro.redirect(redirectTo, 301);
 
 const topicSlug = Astro.params.topic;
 const subtopicSlug = Astro.params.subtopic;
@@ -14,58 +28,42 @@ const found =
 	topicSlug && subtopicSlug && kind && slug
 		? getEntry(catalog, topicSlug, subtopicSlug, kind, slug)
 		: undefined;
-
-if (
-	found?.entry.kind === "definitions" ||
-	found?.entry.kind === "techniques" ||
-	found?.entry.kind === "theorems"
-) {
-	return Astro.redirect(entryPath(found.entry), 301);
-}
-
 if (!found) {
-	Astro.response.status = 404;
+	throw new Error(`missing entry ${topicSlug}/${subtopicSlug}/${kind}/${slug}`);
 }
-
-const topic = found?.topic;
-const subtopic = found?.subtopic;
-const entry = found?.entry;
+const { topic, subtopic, entry } = found;
 ---
 
-<Layout title={entry ? `${entry.title} · 21-127` : "Not found"}>
-	{entry && topic && subtopic ? (
-		<div class="library reading">
-			<LibrarySidebar
-				topic={topic}
-				subtopic={subtopic}
-				currentKind={entry.kind}
-				currentSlug={entry.slug}
-			/>
-			<article class="article">
-				<h1>{entry.title}</h1>
-				{entry.inlineProblems ? (
-					<div class="prose">
-						<div set:html={entry.html} />
-						<ol>
-							{entry.inlineProblems.map((item) => (
-								<li>
-									<div set:html={item.promptHtml} />
-									<Solution html={item.solutionHtml} />
-								</li>
-							))}
-						</ol>
-					</div>
-				) : (
-					<>
-						<div class="prose" set:html={entry.html} />
-						<Solution html={entry.solutionHtml} />
-					</>
-				)}
-			</article>
-		</div>
-	) : (
-		<p class="missing">Not found.</p>
-	)}
+<Layout title={`${entry.title} · 21-127`}>
+	<div class="library reading">
+		<LibrarySidebar
+			topic={topic}
+			subtopic={subtopic}
+			currentKind={entry.kind}
+			currentSlug={entry.slug}
+		/>
+		<article class="article">
+			<h1>{entry.title}</h1>
+			{entry.inlineProblems ? (
+				<div class="prose">
+					<div set:html={entry.html} />
+					<ol>
+						{entry.inlineProblems.map((item, index) => (
+							<li>
+								<div set:html={item.promptHtml} />
+								{item.solutionHtml ? <Solution id={String(index)} /> : null}
+							</li>
+						))}
+					</ol>
+				</div>
+			) : (
+				<>
+					<div class="prose" set:html={entry.html} />
+					{entry.solutionHtml ? <Solution id={entry.slug} /> : null}
+				</>
+			)}
+		</article>
+	</div>
 </Layout>
 
 <script>

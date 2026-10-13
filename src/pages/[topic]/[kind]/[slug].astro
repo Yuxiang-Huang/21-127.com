@@ -1,23 +1,21 @@
 ---
 import Layout from "../../../layouts/Layout.astro";
-import { catalog, entryPath, findEntry } from "../../../lib/library/load";
-import "../../../styles/library.css";
+import { legacyPaths } from "../../../lib/library/gated";
 
-const topicSlug = Astro.params.topic;
-const kind = Astro.params.kind;
-const slug = Astro.params.slug;
-const entry =
-	topicSlug && kind && slug
-		? findEntry(catalog, topicSlug, kind, slug)
-		: undefined;
+export const prerender = true;
 
-if (entry) {
-	return Astro.redirect(entryPath(entry), 301);
+export function getStaticPaths() {
+	return legacyPaths();
 }
 
-Astro.response.status = 404;
+interface Props {
+	redirectTo: string;
+}
+
+const { redirectTo } = Astro.props;
+return Astro.redirect(redirectTo, 301);
 ---
 
-<Layout title="Not found">
-	<p class="missing">Not found.</p>
+<Layout title="Moved">
+	<p class="missing">Moved.</p>
 </Layout>

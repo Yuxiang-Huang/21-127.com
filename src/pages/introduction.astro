@@ -5,6 +5,8 @@ import Layout from "../layouts/Layout.astro";
 import { renderTex } from "../lib/library/render";
 import "../styles/library.css";
 
+export const prerender = true;
+
 const page = renderTex(source, "introduction.tex");
 ---
 

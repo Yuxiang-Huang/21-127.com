@@ -150,6 +150,11 @@ describe("questionPieces", () => {
 			expect(item.html).not.toContain("textbf");
 		}
 	});
+
+	test("a whitespace-only part between two blanks keeps its space", () => {
+		expect(questionPieces(" ")).toEqual([{ kind: "text", html: " " }]);
+		expect(questionPieces("")).toEqual([]);
+	});
 });
 
 describe("hideCount", () => {

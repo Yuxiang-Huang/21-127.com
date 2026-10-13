@@ -3,8 +3,15 @@ import "katex/dist/katex.min.css";
 import LibrarySidebar from "../../../components/LibrarySidebar.astro";
 import Solution from "../../../components/Solution.astro";
 import Layout from "../../../layouts/Layout.astro";
+import { kindPaths } from "../../../lib/library/gated";
 import { catalog, getSubtopic } from "../../../lib/library/load";
 import "../../../styles/library.css";
+
+export const prerender = true;
+
+export function getStaticPaths() {
+	return kindPaths("theorems");
+}
 
 const topicSlug = Astro.params.topic;
 const subtopicSlug = Astro.params.subtopic;
@@ -12,40 +19,27 @@ const found =
 	topicSlug && subtopicSlug
 		? getSubtopic(catalog, topicSlug, subtopicSlug)
 		: undefined;
-const theorems = found?.subtopic.kinds.theorems ?? [];
-
-if (!found || theorems.length === 0) {
-	Astro.response.status = 404;
+if (!found || found.subtopic.kinds.theorems.length === 0) {
+	throw new Error(`missing theorems page ${topicSlug}/${subtopicSlug}`);
 }
-
-const topic = found?.topic;
-const subtopic = found?.subtopic;
+const { topic, subtopic } = found;
+const theorems = subtopic.kinds.theorems;
 ---
 
-<Layout
-	title={subtopic ? `Theorems · ${subtopic.title} · 21-127` : "Not found"}
->
-	{topic && subtopic && theorems.length > 0 ? (
-		<div class="library reading">
-			<LibrarySidebar
-				topic={topic}
-				subtopic={subtopic}
-				currentKind="theorems"
-			/>
-			<article class="article">
-				<h1>Theorems</h1>
-				{theorems.map((entry) => (
-					<section class="definition" id={entry.slug}>
-						<h2>{entry.title}</h2>
-						<div class="prose" set:html={entry.html} />
-						<Solution html={entry.proofHtml} label="Proof" />
-					</section>
-				))}
-			</article>
-		</div>
-	) : (
-		<p class="missing">Not found.</p>
-	)}
+<Layout title={`Theorems · ${subtopic.title} · 21-127`}>
+	<div class="library reading">
+		<LibrarySidebar topic={topic} subtopic={subtopic} currentKind="theorems" />
+		<article class="article">
+			<h1>Theorems</h1>
+			{theorems.map((entry) => (
+				<section class="definition" id={entry.slug}>
+					<h2>{entry.title}</h2>
+					<div class="prose" set:html={entry.html} />
+					{entry.proofHtml ? <Solution id={entry.slug} label="Proof" /> : null}
+				</section>
+			))}
+		</article>
+	</div>
 </Layout>
 
 <script>

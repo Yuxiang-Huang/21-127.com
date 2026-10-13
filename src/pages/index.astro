@@ -1,20 +1,13 @@
 ---
-import { Show } from "@clerk/astro/components";
 import source from "../../21-127.com-data/introduction.tex?raw";
 import Layout from "../layouts/Layout.astro";
-import { getInterestCount, hasInterest } from "../lib/interest";
 import { catalog, subtopicPath } from "../lib/library/load";
 import { renderTex } from "../lib/library/render";
 import "../styles/library.css";
 
-const introduction = renderTex(source, "introduction.tex");
+export const prerender = true;
 
-const { isAuthenticated, userId } = Astro.locals.auth();
-const count = await getInterestCount();
-const interested =
-	isAuthenticated && userId ? await hasInterest(userId) : false;
-const countLabel =
-	count === 1 ? "1 person is interested" : `${count} people are interested`;
+const introduction = renderTex(source, "introduction.tex");
 ---
 
 <Layout title="21-127">
@@ -49,16 +42,53 @@ const countLabel =
 				Express your interest in additional resources for CMU's 21-127: Concepts
 				of Mathematics course!
 			</p>
-			<p class="count" aria-live="polite">{countLabel}</p>
-			<Show when="signed-in">
-				<div class="actions">
-					<form method="post" action="/api/interest">
-						<button type="submit">
-							{interested ? "I'm no longer interested" : "I'm interested"}
-						</button>
-					</form>
-				</div>
-			</Show>
+			<p class="count" data-interest-count aria-live="polite"></p>
+			<div class="actions" data-interest-actions hidden>
+				<form method="post" action="/api/interest">
+					<button type="submit" data-interest-button>I'm interested</button>
+				</form>
+			</div>
 		</section>
 	</div>
 </Layout>
+
+<script>
+import { onSession } from "../lib/client/session";
+
+const countEl = document.querySelector("[data-interest-count]");
+const actions = document.querySelector("[data-interest-actions]");
+const button = document.querySelector("[data-interest-button]");
+
+async function paint() {
+	const response = await fetch("/api/interest");
+	if (!response.ok) return;
+	const body = (await response.json()) as {
+		count?: number;
+		signedIn?: boolean;
+		interested?: boolean;
+	};
+	if (typeof body.count !== "number" || !(countEl instanceof HTMLElement))
+		return;
+	countEl.textContent =
+		body.count === 1
+			? "1 person is interested"
+			: `${body.count} people are interested`;
+	if (
+		!(actions instanceof HTMLElement) ||
+		!(button instanceof HTMLButtonElement)
+	) {
+		return;
+	}
+	actions.hidden = !body.signedIn;
+	if (body.signedIn) {
+		button.textContent = body.interested
+			? "I'm no longer interested"
+			: "I'm interested";
+	}
+}
+
+void paint();
+onSession((user) => {
+	if (user) void paint();
+});
+</script>

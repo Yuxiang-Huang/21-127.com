@@ -101,6 +101,10 @@ body:has(.home) {
 	align-items: center;
 }
 
+.interest .actions[hidden] {
+	display: none;
+}
+
 body:has(.reading) {
 	display: flex;
 	flex-direction: column;

@@ -2,26 +2,29 @@
 import { SignInButton } from "@clerk/astro/components";
 
 interface Props {
-	html: string | null;
+	id: string;
 	label?: "Solution" | "Proof";
 }
 
-const { html, label = "Solution" } = Astro.props;
-const { isAuthenticated } = Astro.locals.auth();
+const { id, label = "Solution" } = Astro.props;
 const prompt =
 	label === "Proof"
 		? "Sign in to view the proof"
 		: "Sign in to view the solution";
 ---
 
-{html &&
-	(isAuthenticated ? (
-		<details class="solution">
-			<summary>{label}</summary>
-			<div class="prose" set:html={html} />
-		</details>
-	) : (
-		<div class="solution">
-			<SignInButton mode="modal">{prompt}</SignInButton>
-		</div>
-	))}
+<div class="solution" data-gated={id}>
+	<SignInButton mode="modal">{prompt}</SignInButton>
+</div>
+
+<script>
+import { loadGated, revealSolutions } from "../lib/client/gated";
+import { onSession } from "../lib/client/session";
+
+onSession((user) => {
+	if (!user) return;
+	void loadGated().then((payload) => {
+		if (payload) revealSolutions(payload.solutions);
+	});
+});
+</script>

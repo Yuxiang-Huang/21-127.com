@@ -1,18 +1,9 @@
 ---
-import { Show, SignInButton, SignOutButton } from "@clerk/astro/components";
+import { SignInButton, SignOutButton } from "@clerk/astro/components";
 import CircleUser from "@lucide/astro/icons/circle-user";
 import LogIn from "@lucide/astro/icons/log-in";
 import LogOut from "@lucide/astro/icons/log-out";
 import User from "@lucide/astro/icons/user";
-
-const { isAuthenticated } = Astro.locals.auth();
-const user = isAuthenticated ? await Astro.locals.currentUser() : null;
-const name =
-	user?.fullName ||
-	[user?.firstName, user?.lastName].filter(Boolean).join(" ") ||
-	user?.username ||
-	user?.primaryEmailAddress?.emailAddress ||
-	"";
 ---
 
 <header class="site-header">
@@ -41,33 +32,33 @@ const name =
 			<CircleUser size={22} aria-hidden="true" />
 		</button>
 		<div id="account-menu" class="account-menu" role="menu" hidden>
-			<Show when="signed-in">
+			<div data-signed-in hidden>
 				<p class="account-name">
 					<User size={18} aria-hidden="true" />
-					<span data-account-name>{name}</span>
+					<span data-account-name></span>
 				</p>
-			</Show>
-			<Show when="signed-out">
-				<SignInButton mode="modal" asChild>
-					<button type="button" role="menuitem">
-						<LogIn size={18} aria-hidden="true" />
-						Sign in
-					</button>
-				</SignInButton>
-			</Show>
-			<Show when="signed-in">
 				<SignOutButton redirectUrl="/" asChild>
 					<button type="button" role="menuitem">
 						<LogOut size={18} aria-hidden="true" />
 						Sign out
 					</button>
 				</SignOutButton>
-			</Show>
+			</div>
+			<div data-signed-out>
+				<SignInButton mode="modal" asChild>
+					<button type="button" role="menuitem">
+						<LogIn size={18} aria-hidden="true" />
+						Sign in
+					</button>
+				</SignInButton>
+			</div>
 		</div>
 	</div>
 </header>
 
 <script>
+import { displayName, onSession } from "../lib/client/session";
+
 const root = document.querySelector(".site-account");
 const toggle = root?.querySelector(".account-toggle");
 const menu = root?.querySelector(".account-menu");
@@ -79,7 +70,6 @@ if (
 	root.dataset.bound !== "true"
 ) {
 	root.dataset.bound = "true";
-	const startedSignedOut = !root.querySelector("[data-account-name]");
 
 	const setOpen = (open: boolean) => {
 		toggle.setAttribute("aria-expanded", String(open));
@@ -107,52 +97,17 @@ if (
 		}
 	});
 
-	type ClerkUser = {
-		fullName?: string | null;
-		firstName?: string | null;
-		lastName?: string | null;
-		username?: string | null;
-		primaryEmailAddress?: { emailAddress?: string | null } | null;
-	};
-	type ClerkClient = {
-		user?: ClerkUser | null;
-		addListener?: (
-			listener: (resources: { user?: ClerkUser | null }) => void,
-		) => void;
-	};
-
-	const clerkOn = () => (window as Window & { Clerk?: ClerkClient }).Clerk;
-
-	const applyName = () => {
+	onSession((user) => {
+		const signedIn = user != null;
+		for (const node of root.querySelectorAll("[data-signed-in]")) {
+			if (node instanceof HTMLElement) node.hidden = !signedIn;
+		}
+		for (const node of root.querySelectorAll("[data-signed-out]")) {
+			if (node instanceof HTMLElement) node.hidden = signedIn;
+		}
 		const nameEl = root.querySelector("[data-account-name]");
-		const current = clerkOn()?.user;
-		if (!nameEl || !current) return;
-		const next =
-			current.fullName ||
-			[current.firstName, current.lastName].filter(Boolean).join(" ") ||
-			current.username ||
-			current.primaryEmailAddress?.emailAddress ||
-			"";
-		if (next) nameEl.textContent = next;
-	};
-
-	const bindClerk = () => {
-		const clerk = clerkOn();
-		if (!clerk?.addListener) return false;
-		clerk.addListener(({ user }) => {
-			applyName();
-			if (startedSignedOut && user) window.location.reload();
-		});
-		applyName();
-		return true;
-	};
-
-	if (!bindClerk()) {
-		const timer = window.setInterval(() => {
-			if (bindClerk()) window.clearInterval(timer);
-		}, 100);
-		window.setTimeout(() => window.clearInterval(timer), 10000);
-	}
+		if (nameEl && user) nameEl.textContent = displayName(user);
+	});
 }
 </script>
 
@@ -244,7 +199,8 @@ if (
 	font-size: 0.95rem;
 }
 
-.account-menu[hidden] {
+.account-menu[hidden],
+.account-menu [hidden] {
 	display: none;
 }
 
