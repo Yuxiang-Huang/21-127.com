@@ -24,6 +24,7 @@ export type RecallCard = {
 	kind: string;
 	slug: string;
 	title: string;
+	quizTitle: string;
 	parts: RecallPart[];
 };
 
@@ -35,6 +36,7 @@ export function recallCard(entry: Entry): RecallCard {
 		kind: entry.kind,
 		slug: entry.slug,
 		title: entry.title,
+		quizTitle: question.title ?? entry.title,
 		parts: question.parts.map((text, index) => {
 			const atom = question.atoms.find((item) => item.index === index);
 			return {

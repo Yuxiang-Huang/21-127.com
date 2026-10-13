@@ -50,6 +50,29 @@ wrong:
 			),
 		).toThrow("repeats the part");
 	});
+
+	test("a quiz title replaces the heading without the name", () => {
+		const parsed = parseQuestion(
+			`title: Jections I
+parts:
+  0: "$f$ is "
+  1: injective
+wrong:
+  1: [surjective]
+`,
+			"injection.yaml",
+		);
+		expect(parsed.title).toBe("Jections I");
+		expect(parseQuestion(question, "function.yaml").title).toBeUndefined();
+	});
+
+	test("an empty or non-string quiz title fails", () => {
+		for (const title of ['""', "3"]) {
+			expect(() =>
+				parseQuestion(`title: ${title}\nparts:\n  0: "$A$"\n`, "a.yaml"),
+			).toThrow("title must be a non-empty string");
+		}
+	});
 });
 
 describe("clozeMarks", () => {

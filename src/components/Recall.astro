@@ -129,6 +129,7 @@ type Card = {
 	kind: string;
 	slug: string;
 	title: string;
+	quizTitle: string;
 	parts: Part[];
 };
 type Difficulty = "easy" | "medium" | "hard" | "mastery" | "yuxiang";
@@ -282,7 +283,10 @@ function mountRecall() {
 	function renderCard() {
 		const card = order[index];
 		if (!card || !(statement instanceof HTMLElement)) return;
-		if (title) title.textContent = card.title;
+		if (title) {
+			title.textContent =
+				difficulty === "yuxiang" ? card.title : card.quizTitle;
+		}
 		if (progress) {
 			progress.textContent = `${index + 1} of ${order.length}`;
 		}

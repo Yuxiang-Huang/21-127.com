@@ -60,8 +60,12 @@ _Avoid_: walkthrough, recording
 A pass over Definitions, Techniques, and Theorems. Each content Subtopic has one, after Theorems and before Problems. The last Subtopic of a Topic is the Quiz over every Definition, Technique, and Theorem in the Topic.
 _Avoid_: drill, test, exam, flashcard
 
+**Setup**:
+The declarations that open a statement and introduce its objects, such as "Let $A$ and $B$ be sets, and let $f : A \to B$ be a function." A restriction on those objects, such as $b \neq 0$, is not part of the Setup.
+_Avoid_: given, hypothesis, premise, opener
+
 **Atom**:
-One part of a question whose index has wrong answers. The part's own text is the correct choice.
+One part of a question whose index has wrong answers. The part's own text is the correct choice. An Atom is never part of a Setup.
 _Avoid_: keyword, blank, token
 
 ### Signals

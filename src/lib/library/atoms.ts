@@ -10,12 +10,13 @@ export type Question = {
 	parts: string[];
 	atoms: Atom[];
 	statement: string;
+	title?: string;
 };
 
 export function parseQuestion(text: string, file: string): Question {
 	const doc = asRecord(parse(text), file);
 	const extra = Object.keys(doc).filter(
-		(key) => key !== "parts" && key !== "wrong",
+		(key) => key !== "parts" && key !== "wrong" && key !== "title",
 	);
 	if (extra.length > 0) {
 		throw new Error(`${file}: unknown keys ${extra.join(", ")}`);
@@ -26,8 +27,22 @@ export function parseQuestion(text: string, file: string): Question {
 	const atoms = [...wrong.entries()]
 		.sort((a, b) => a[0] - b[0])
 		.map(([index, choices]) => ({ index, text: parts[index], wrong: choices }));
+	const title = readTitle(doc.title, file);
 
-	return { parts, atoms, statement: parts.join("") };
+	return {
+		parts,
+		atoms,
+		statement: parts.join(""),
+		...(title === undefined ? {} : { title }),
+	};
+}
+
+function readTitle(value: unknown, file: string): string | undefined {
+	if (value === undefined) return undefined;
+	if (typeof value !== "string" || value.trim() === "") {
+		throw new Error(`${file}: title must be a non-empty string`);
+	}
+	return value.trim();
 }
 
 function readParts(value: unknown, file: string): string[] {
