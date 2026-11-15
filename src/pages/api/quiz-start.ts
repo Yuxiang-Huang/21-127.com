@@ -1,6 +1,5 @@
 import type { APIRoute } from "astro";
 
-import { primaryEmail } from "../../lib/interest";
 import { quizPage } from "../../lib/library/gated";
 import { finishQuizStart, isQuizDifficulty, recordQuizStart } from "../../lib/quiz-start";
 
@@ -25,9 +24,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
 	const quiz = quizPage(page);
 	if (!quiz) return new Response("Not found", { status: 404 });
 
-	const user = await locals.currentUser();
-	const id = await recordQuizStart(userId, primaryEmail(user), quiz, difficulty);
-	return json({ id }, 201);
+	const start = await recordQuizStart(quiz, difficulty);
+	return json(start, 201);
 };
 
 export const PATCH: APIRoute = async ({ request, locals }) => {
@@ -44,11 +42,12 @@ export const PATCH: APIRoute = async ({ request, locals }) => {
 	}
 	const fields = record(body);
 	const id = fields?.id;
+	const token = fields?.token;
 	const score = fields?.score;
-	if (!isId(id) || !isScore(score)) {
+	if (!isId(id) || !isToken(token) || !isScore(score)) {
 		return new Response("Bad request", { status: 400 });
 	}
-	const updated = await finishQuizStart(userId, id, score);
+	const updated = await finishQuizStart(id, token, score);
 	if (!updated) return new Response("Not found", { status: 404 });
 	return new Response(null, { status: 204 });
 };
@@ -58,6 +57,7 @@ function record(value: unknown):
 			page?: unknown;
 			difficulty?: unknown;
 			id?: unknown;
+			token?: unknown;
 			score?: unknown;
 	  }
 	| undefined {
@@ -69,6 +69,13 @@ function record(value: unknown):
 
 function isId(value: unknown): value is number {
 	return typeof value === "number" && Number.isInteger(value) && value > 0;
+}
+
+function isToken(value: unknown): value is string {
+	return (
+		typeof value === "string" &&
+		/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)
+	);
 }
 
 function isScore(value: unknown): value is string {

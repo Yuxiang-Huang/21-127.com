@@ -11,35 +11,29 @@ export function isQuizDifficulty(value: unknown): value is QuizDifficulty {
 }
 
 export async function recordQuizStart(
-	clerkUserId: string,
-	email: string | null,
 	page: string,
 	difficulty: QuizDifficulty,
-): Promise<number> {
+): Promise<{ id: number; token: string }> {
+	const token = crypto.randomUUID();
 	const [row] = await db()
 		.insert(quizStarts)
 		.values({
-			clerkUserId,
-			email,
 			page,
 			difficulty,
 			startedAt: new Date().toISOString(),
 			finished: false,
+			token,
 		})
 		.returning({ id: quizStarts.id });
 	if (!row) throw new Error("quiz start was not recorded");
-	return row.id;
+	return { id: row.id, token };
 }
 
-export async function finishQuizStart(
-	clerkUserId: string,
-	id: number,
-	score: string,
-): Promise<boolean> {
+export async function finishQuizStart(id: number, token: string, score: string): Promise<boolean> {
 	const rows = await db()
 		.update(quizStarts)
 		.set({ score, finished: true })
-		.where(and(eq(quizStarts.id, id), eq(quizStarts.clerkUserId, clerkUserId)))
+		.where(and(eq(quizStarts.id, id), eq(quizStarts.token, token)))
 		.returning({ id: quizStarts.id });
 	return rows.length > 0;
 }

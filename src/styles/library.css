@@ -327,8 +327,15 @@ body:has(.reading) > .site-header {
 
 .recall-lead,
 .recall-progress,
-.recall-result {
+.recall-result,
+.recall-privacy {
 	color: var(--muted);
+}
+
+.recall-privacy {
+	max-width: 36rem;
+	margin: 0 0 0.85rem;
+	font-size: 0.92rem;
 }
 
 .recall-difficulties,

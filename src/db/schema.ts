@@ -8,11 +8,10 @@ export const interests = sqliteTable("interests", {
 
 export const quizStarts = sqliteTable("quiz_starts", {
 	id: integer("id").primaryKey({ autoIncrement: true }),
-	clerkUserId: text("clerk_user_id").notNull(),
-	email: text("email"),
 	page: text("page").notNull(),
 	difficulty: text("difficulty").notNull(),
 	startedAt: text("started_at").notNull(),
 	score: text("score"),
 	finished: integer("finished", { mode: "boolean" }).notNull().default(false),
+	token: text("token").notNull(),
 });

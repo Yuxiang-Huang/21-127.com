@@ -10,6 +10,10 @@ const { heading } = Astro.props;
 ---
 
 <h1>{heading}</h1>
+<p class="recall-privacy">
+	Starting a quiz stores the page, difficulty, and score. It does not store your name, email, or
+	account id.
+</p>
 <div class="solution" data-quiz-gate>
 	<SignInButton mode="modal">Sign in to access quiz</SignInButton>
 </div>
@@ -161,7 +165,7 @@ const { heading } = Astro.props;
 		let order: Card[] = [];
 		let index = 0;
 		let difficulty: Difficulty = "easy";
-		let startId: Promise<number | null> = Promise.resolve(null);
+		let startId: Promise<{ id: number; token: string } | null> = Promise.resolve(null);
 		let hiddenCorrect = 0;
 		let hiddenTotal = 0;
 		let similarities: number[] = [];
@@ -444,12 +448,12 @@ const { heading } = Astro.props;
 				scoreText.textContent = difficulty === "yuxiang" ? `Score: ${result}` : result;
 			}
 			const pending = startId;
-			void pending.then((id) => {
-				if (id == null) return;
+			void pending.then((start) => {
+				if (start == null) return;
 				void fetch("/api/quiz-start", {
 					method: "PATCH",
 					headers: { "content-type": "application/json" },
-					body: JSON.stringify({ id, score: result }),
+					body: JSON.stringify({ id: start.id, token: start.token, score: result }),
 				}).catch(() => {});
 			});
 		}
@@ -486,8 +490,9 @@ const { heading } = Astro.props;
 				})
 					.then(async (response) => {
 						if (!response.ok) return null;
-						const body = (await response.json()) as { id?: unknown };
-						return typeof body.id === "number" ? body.id : null;
+						const body = (await response.json()) as { id?: unknown; token?: unknown };
+						if (typeof body.id !== "number" || typeof body.token !== "string") return null;
+						return { id: body.id, token: body.token };
 					})
 					.catch(() => null);
 			});
