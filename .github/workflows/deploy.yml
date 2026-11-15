@@ -62,5 +62,7 @@ jobs:
           command: deploy --var PUBLIC_CLERK_PUBLISHABLE_KEY:${{ secrets.PUBLIC_CLERK_PUBLISHABLE_KEY }}
           secrets: |
             CLERK_SECRET_KEY
+            OPENROUTER_API_KEY
         env:
           CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
