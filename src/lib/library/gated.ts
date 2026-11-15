@@ -88,6 +88,12 @@ export function cardsFor(page: string): RecallCard[] | undefined {
 	return quizzes.get(normalizePage(page));
 }
 
+export function quizPage(page: string): string | undefined {
+	const path = normalizePage(page);
+	if (!quizzes.has(path)) return undefined;
+	return path;
+}
+
 function normalizePage(page: string): string {
 	const path = page.split("#")[0]?.split("?")[0] ?? "";
 	if (!path.startsWith("/") || path.includes("..") || path.includes("//")) {

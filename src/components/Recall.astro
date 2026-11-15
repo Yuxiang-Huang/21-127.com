@@ -111,6 +111,13 @@ const rates: Record<Difficulty, number> = {
 	yuxiang: 1,
 };
 
+function yuxiangScore(similarities: number[]): string {
+	if (similarities.length === 0) return "0.000";
+	const mean =
+		similarities.reduce((sum, value) => sum + value, 0) / similarities.length;
+	return mean.toFixed(3);
+}
+
 function mountRecall(deck: Card[]) {
 	const root = document.querySelector(".recall");
 	if (!(root instanceof HTMLElement)) return;
@@ -136,6 +143,7 @@ function mountRecall(deck: Card[]) {
 	let order: Card[] = [];
 	let index = 0;
 	let difficulty: Difficulty = "easy";
+	let startId: Promise<number | null> = Promise.resolve(null);
 	let hiddenCorrect = 0;
 	let hiddenTotal = 0;
 	let similarities: number[] = [];
@@ -422,15 +430,23 @@ function mountRecall(deck: Card[]) {
 	function finish() {
 		show(play, false);
 		show(score, true);
-		if (!scoreText) return;
-		if (difficulty === "yuxiang") {
-			const mean =
-				similarities.reduce((sum, value) => sum + value, 0) /
-				similarities.length;
-			scoreText.textContent = `Score: ${mean.toFixed(3)}`;
-			return;
+		const result =
+			difficulty === "yuxiang"
+				? yuxiangScore(similarities)
+				: `${hiddenCorrect} / ${hiddenTotal}`;
+		if (scoreText) {
+			scoreText.textContent =
+				difficulty === "yuxiang" ? `Score: ${result}` : result;
 		}
-		scoreText.textContent = `${hiddenCorrect} / ${hiddenTotal}`;
+		const pending = startId;
+		void pending.then((id) => {
+			if (id == null) return;
+			void fetch("/api/quiz-start", {
+				method: "PATCH",
+				headers: { "content-type": "application/json" },
+				body: JSON.stringify({ id, score: result }),
+			}).catch(() => {});
+		});
 	}
 
 	for (const button of root.querySelectorAll("[data-difficulty]")) {
@@ -455,6 +471,20 @@ function mountRecall(deck: Card[]) {
 			show(score, false);
 			show(play, true);
 			renderCard();
+			startId = fetch("/api/quiz-start", {
+				method: "POST",
+				headers: { "content-type": "application/json" },
+				body: JSON.stringify({
+					page: location.pathname,
+					difficulty: name,
+				}),
+			})
+				.then(async (response) => {
+					if (!response.ok) return null;
+					const body = (await response.json()) as { id?: unknown };
+					return typeof body.id === "number" ? body.id : null;
+				})
+				.catch(() => null);
 		});
 	}
 
