@@ -9,9 +9,7 @@ export type SessionUser = {
 type ClerkClient = {
 	loaded?: boolean;
 	user?: SessionUser | null;
-	addListener?: (
-		listener: (resources: { user?: SessionUser | null }) => void,
-	) => void;
+	addListener?: (listener: (resources: { user?: SessionUser | null }) => void) => void;
 };
 
 const listeners = new Set<(user: SessionUser | null) => void>();

@@ -5,6 +5,7 @@ import Solution from "../../../components/Solution.astro";
 import Layout from "../../../layouts/Layout.astro";
 import { kindPaths } from "../../../lib/library/gated";
 import { catalog, getSubtopic } from "../../../lib/library/load";
+
 import "../../../styles/library.css";
 
 export const prerender = true;
@@ -15,10 +16,7 @@ export function getStaticPaths() {
 
 const topicSlug = Astro.params.topic;
 const subtopicSlug = Astro.params.subtopic;
-const found =
-	topicSlug && subtopicSlug
-		? getSubtopic(catalog, topicSlug, subtopicSlug)
-		: undefined;
+const found = topicSlug && subtopicSlug ? getSubtopic(catalog, topicSlug, subtopicSlug) : undefined;
 if (!found || found.subtopic.kinds.theorems.length === 0) {
 	throw new Error(`missing theorems page ${topicSlug}/${subtopicSlug}`);
 }
@@ -43,5 +41,5 @@ const theorems = subtopic.kinds.theorems;
 </Layout>
 
 <script>
-import "katex/contrib/copy-tex";
+	import "katex/contrib/copy-tex";
 </script>

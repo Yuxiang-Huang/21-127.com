@@ -1,11 +1,8 @@
 import type { APIRoute } from "astro";
+
 import { primaryEmail } from "../../lib/interest";
 import { quizPage } from "../../lib/library/gated";
-import {
-	finishQuizStart,
-	isQuizDifficulty,
-	recordQuizStart,
-} from "../../lib/quiz-start";
+import { finishQuizStart, isQuizDifficulty, recordQuizStart } from "../../lib/quiz-start";
 
 export const POST: APIRoute = async ({ request, locals }) => {
 	const { isAuthenticated, userId } = locals.auth();
@@ -29,12 +26,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 	if (!quiz) return new Response("Not found", { status: 404 });
 
 	const user = await locals.currentUser();
-	const id = await recordQuizStart(
-		userId,
-		primaryEmail(user),
-		quiz,
-		difficulty,
-	);
+	const id = await recordQuizStart(userId, primaryEmail(user), quiz, difficulty);
 	return json({ id }, 201);
 };
 

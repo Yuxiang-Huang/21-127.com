@@ -1,4 +1,5 @@
 import { and, eq } from "drizzle-orm";
+
 import { db, quizStarts } from "../db";
 
 const DIFFICULTIES = ["easy", "medium", "hard", "mastery", "yuxiang"] as const;
@@ -6,10 +7,7 @@ const DIFFICULTIES = ["easy", "medium", "hard", "mastery", "yuxiang"] as const;
 export type QuizDifficulty = (typeof DIFFICULTIES)[number];
 
 export function isQuizDifficulty(value: unknown): value is QuizDifficulty {
-	return (
-		typeof value === "string" &&
-		(DIFFICULTIES as readonly string[]).includes(value)
-	);
+	return typeof value === "string" && (DIFFICULTIES as readonly string[]).includes(value);
 }
 
 export async function recordQuizStart(

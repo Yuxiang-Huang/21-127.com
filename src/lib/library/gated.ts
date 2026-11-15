@@ -1,11 +1,4 @@
-import {
-	catalog,
-	type Entry,
-	entryPath,
-	KINDS,
-	recallEntries,
-	topicRecallEntries,
-} from "./load";
+import { catalog, type Entry, entryPath, KINDS, recallEntries, topicRecallEntries } from "./load";
 import { type RecallCard, recallCard } from "./recall";
 
 export type GatedBlock = {
@@ -70,10 +63,7 @@ for (const topic of catalog.topics) {
 			`${base}/techniques`,
 			blocksFor(subtopic.kinds.techniques, "solutionHtml", "Solution"),
 		);
-		addSolutions(
-			`${base}/theorems`,
-			blocksFor(subtopic.kinds.theorems, "proofHtml", "Proof"),
-		);
+		addSolutions(`${base}/theorems`, blocksFor(subtopic.kinds.theorems, "proofHtml", "Proof"));
 		for (const entry of subtopic.kinds.problems) {
 			addSolutions(`${base}/problems/${entry.slug}`, problemBlocks(entry));
 		}
@@ -106,10 +96,7 @@ function normalizePage(page: string): string {
 export function kindPaths(kind: "definitions" | "techniques" | "theorems") {
 	return catalog.topics.flatMap((topic) =>
 		topic.subtopics
-			.filter(
-				(subtopic) =>
-					subtopic.slug !== "quiz" && subtopic.kinds[kind].length > 0,
-			)
+			.filter((subtopic) => subtopic.slug !== "quiz" && subtopic.kinds[kind].length > 0)
 			.map((subtopic) => ({
 				params: { topic: topic.slug, subtopic: subtopic.slug },
 			})),
@@ -125,10 +112,7 @@ export function topicQuizPaths() {
 export function subtopicQuizPaths() {
 	return catalog.topics.flatMap((topic) =>
 		topic.subtopics
-			.filter(
-				(subtopic) =>
-					subtopic.slug !== "quiz" && recallEntries(subtopic).length > 0,
-			)
+			.filter((subtopic) => subtopic.slug !== "quiz" && recallEntries(subtopic).length > 0)
 			.map((subtopic) => ({
 				params: { topic: topic.slug, subtopic: subtopic.slug },
 			})),
@@ -154,9 +138,7 @@ export function entryPaths() {
 							kind: kind.id,
 							slug: entry.slug,
 						},
-						props: REDIRECT_KINDS.has(kind.id)
-							? { redirectTo: entryPath(entry) }
-							: {},
+						props: REDIRECT_KINDS.has(kind.id) ? { redirectTo: entryPath(entry) } : {},
 					});
 				}
 			}

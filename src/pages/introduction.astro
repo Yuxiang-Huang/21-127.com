@@ -3,6 +3,7 @@ import "katex/dist/katex.min.css";
 import source from "../../21-127.com-data/introduction.tex?raw";
 import Layout from "../layouts/Layout.astro";
 import { renderTex } from "../lib/library/render";
+
 import "../styles/library.css";
 
 export const prerender = true;
@@ -20,5 +21,5 @@ const page = renderTex(source, "introduction.tex");
 </Layout>
 
 <script>
-import "katex/contrib/copy-tex";
+	import "katex/contrib/copy-tex";
 </script>

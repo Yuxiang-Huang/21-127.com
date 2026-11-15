@@ -7,6 +7,9 @@ dist/
 # dependencies
 node_modules/
 
+# vite+ hook dispatcher
+.vite-hooks/_
+
 # logs
 npm-debug.log*
 yarn-debug.log*

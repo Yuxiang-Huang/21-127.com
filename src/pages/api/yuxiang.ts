@@ -1,5 +1,6 @@
-import { env } from "cloudflare:workers";
 import type { APIRoute } from "astro";
+import { env } from "cloudflare:workers";
+
 import { catalog, findEntry, isKind } from "../../lib/library/load";
 import { cosineSimilarity } from "../../lib/library/similarity";
 
@@ -30,8 +31,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
 	if (input.trim() === "") {
 		return json({ error: "Type the LaTeX before checking." }, 400);
 	}
-	if (!isKind(kind))
-		return json({ error: "That question was not found." }, 404);
+	if (!isKind(kind)) return json({ error: "That question was not found." }, 404);
 	const entry = findEntry(catalog, topic, kind, slug);
 	const statement = entry?.question?.statement;
 	if (!statement) return json({ error: "That question was not found." }, 404);

@@ -1,4 +1,5 @@
 import { parse } from "yaml";
+
 import { parseQuestion, type Question } from "./atoms";
 import { renderFragment, renderTex } from "./render";
 
@@ -55,11 +56,7 @@ export function isKind(value: string): value is Kind {
 }
 
 export function entryPath(entry: Entry): string {
-	if (
-		entry.kind === "definitions" ||
-		entry.kind === "techniques" ||
-		entry.kind === "theorems"
-	) {
+	if (entry.kind === "definitions" || entry.kind === "techniques" || entry.kind === "theorems") {
 		return `/${entry.topic}/${entry.subtopic}/${entry.kind}#${entry.slug}`;
 	}
 	return `/${entry.topic}/${entry.subtopic}/${entry.kind}/${entry.slug}`;
@@ -77,9 +74,7 @@ export function subtopicPath(topicSlug: string, subtopic: Subtopic): string {
 const RECALL: Kind[] = ["definitions", "techniques", "theorems"];
 
 export function recallEntries(subtopic: Subtopic): Entry[] {
-	return RECALL.flatMap((kind) => subtopic.kinds[kind]).filter(
-		(entry) => entry.question !== null,
-	);
+	return RECALL.flatMap((kind) => subtopic.kinds[kind]).filter((entry) => entry.question !== null);
 }
 
 export function topicRecallEntries(topic: Topic): Entry[] {
@@ -214,9 +209,7 @@ function readTopic(
 	if (typeof title !== "string" || title.trim() === "") {
 		throw new Error(`${file}: title must be a non-empty string`);
 	}
-	const extra = Object.keys(doc).filter(
-		(key) => key !== "title" && key !== "subtopics",
-	);
+	const extra = Object.keys(doc).filter((key) => key !== "title" && key !== "subtopics");
 	if (extra.length > 0) {
 		throw new Error(`${file}: unknown keys ${extra.join(", ")}`);
 	}
@@ -230,18 +223,7 @@ function readTopic(
 	) as Record<Kind, Set<string>>;
 
 	const subtopics = doc.subtopics.map((item, index) =>
-		readSubtopic(
-			slug,
-			file,
-			index,
-			item,
-			tex,
-			yaml,
-			usedTex,
-			usedYaml,
-			seenSubtopics,
-			seenInKind,
-		),
+		readSubtopic(slug, file, index, item, tex, yaml, usedTex, usedYaml, seenSubtopics, seenInKind),
 	);
 	if (seenSubtopics.has("quiz")) {
 		throw new Error(`${file}: quiz is reserved`);
@@ -283,8 +265,7 @@ function readSubtopic(
 		throw new Error(`${where}: title must be a non-empty string`);
 	}
 	const extra = Object.keys(doc).filter(
-		(key) =>
-			key !== "slug" && key !== "title" && key !== "leads" && !isKind(key),
+		(key) => key !== "slug" && key !== "title" && key !== "leads" && !isKind(key),
 	);
 	if (extra.length > 0) {
 		throw new Error(`${where}: unknown keys ${extra.join(", ")}`);
@@ -311,10 +292,7 @@ function readSubtopic(
 	return { slug, title: title.trim(), leads, kinds };
 }
 
-function readLeads(
-	value: unknown,
-	where: string,
-): Partial<Record<Kind, string>> {
+function readLeads(value: unknown, where: string): Partial<Record<Kind, string>> {
 	if (value === undefined) return {};
 	const doc = asRecord(value, `${where}: leads`);
 	const leads: Partial<Record<Kind, string>> = {};
@@ -362,9 +340,7 @@ function readKindList(
 		usedTex.add(texPath);
 		const rendered = renderTex(source, texPath);
 		const question =
-			kind === "problems"
-				? null
-				: readQuestion(topicSlug, kind, entrySlug, file, yaml, usedYaml);
+			kind === "problems" ? null : readQuestion(topicSlug, kind, entrySlug, file, yaml, usedYaml);
 		return {
 			topic: topicSlug,
 			subtopic: subtopicSlug,

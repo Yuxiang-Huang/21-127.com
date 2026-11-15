@@ -5,6 +5,7 @@ import Solution from "../../../components/Solution.astro";
 import Layout from "../../../layouts/Layout.astro";
 import { kindPaths } from "../../../lib/library/gated";
 import { catalog, getSubtopic } from "../../../lib/library/load";
+
 import "../../../styles/library.css";
 
 export const prerender = true;
@@ -15,10 +16,7 @@ export function getStaticPaths() {
 
 const topicSlug = Astro.params.topic;
 const subtopicSlug = Astro.params.subtopic;
-const found =
-	topicSlug && subtopicSlug
-		? getSubtopic(catalog, topicSlug, subtopicSlug)
-		: undefined;
+const found = topicSlug && subtopicSlug ? getSubtopic(catalog, topicSlug, subtopicSlug) : undefined;
 if (!found || found.subtopic.kinds.techniques.length === 0) {
 	throw new Error(`missing techniques page ${topicSlug}/${subtopicSlug}`);
 }
@@ -28,11 +26,7 @@ const techniques = subtopic.kinds.techniques;
 
 <Layout title={`Techniques · ${subtopic.title} · 21-127`}>
 	<div class="library reading">
-		<LibrarySidebar
-			topic={topic}
-			subtopic={subtopic}
-			currentKind="techniques"
-		/>
+		<LibrarySidebar topic={topic} subtopic={subtopic} currentKind="techniques" />
 		<article class="article">
 			<h1>Techniques</h1>
 			{subtopic.leads.techniques && (
@@ -50,5 +44,5 @@ const techniques = subtopic.kinds.techniques;
 </Layout>
 
 <script>
-import "katex/contrib/copy-tex";
+	import "katex/contrib/copy-tex";
 </script>

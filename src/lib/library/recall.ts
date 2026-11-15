@@ -73,8 +73,7 @@ export function questionPieces(source: string): RecallPiece[] {
 		const token = nextListToken(source, i);
 		const raw = token ? source.slice(i, token.at) : source.slice(i);
 		const text = token ? raw.trimEnd() : raw;
-		if (text.trim() !== "")
-			pieces.push({ kind: "text", html: renderQuestionText(text) });
+		if (text.trim() !== "") pieces.push({ kind: "text", html: renderQuestionText(text) });
 		if (!token) break;
 		pieces.push({ kind: token.kind });
 		i = token.at + token.length;

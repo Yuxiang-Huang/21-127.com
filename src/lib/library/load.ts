@@ -1,18 +1,12 @@
 import { assembleCatalog } from "./catalog";
 
 const texModules = import.meta.glob(
-	[
-		"../../../21-127.com-data/**/*.tex",
-		"!../../../21-127.com-data/si-handouts/**",
-	],
+	["../../../21-127.com-data/**/*.tex", "!../../../21-127.com-data/si-handouts/**"],
 	{ eager: true, import: "default", query: "?raw" },
 );
 
 const yamlModules = import.meta.glob(
-	[
-		"../../../21-127.com-data/**/*.yaml",
-		"!../../../21-127.com-data/si-handouts/**",
-	],
+	["../../../21-127.com-data/**/*.yaml", "!../../../21-127.com-data/si-handouts/**"],
 	{ eager: true, import: "default", query: "?raw" },
 );
 
@@ -33,19 +27,9 @@ function toDataPath(globKey: string): string {
 	return normalized.slice(index + marker.length);
 }
 
-export const catalog = assembleCatalog([
-	...filesFrom(texModules),
-	...filesFrom(yamlModules),
-]);
+export const catalog = assembleCatalog([...filesFrom(texModules), ...filesFrom(yamlModules)]);
 
-export type {
-	Catalog,
-	Entry,
-	Kind,
-	Question,
-	Subtopic,
-	Topic,
-} from "./catalog";
+export type { Catalog, Entry, Kind, Question, Subtopic, Topic } from "./catalog";
 export {
 	entryPath,
 	findEntry,

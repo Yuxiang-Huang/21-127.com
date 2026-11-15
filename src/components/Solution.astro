@@ -7,10 +7,7 @@ interface Props {
 }
 
 const { id, label = "Solution" } = Astro.props;
-const prompt =
-	label === "Proof"
-		? "Sign in to view the proof"
-		: "Sign in to view the solution";
+const prompt = label === "Proof" ? "Sign in to view the proof" : "Sign in to view the solution";
 ---
 
 <div class="solution" data-gated={id}>
@@ -18,13 +15,13 @@ const prompt =
 </div>
 
 <script>
-import { loadGated, revealSolutions } from "../lib/client/gated";
-import { onSession } from "../lib/client/session";
+	import { loadGated, revealSolutions } from "../lib/client/gated";
+	import { onSession } from "../lib/client/session";
 
-onSession((user) => {
-	if (!user) return;
-	void loadGated().then((payload) => {
-		if (payload) revealSolutions(payload.solutions);
+	onSession((user) => {
+		if (!user) return;
+		void loadGated().then((payload) => {
+			if (payload) revealSolutions(payload.solutions);
+		});
 	});
-});
 </script>

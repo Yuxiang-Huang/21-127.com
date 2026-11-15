@@ -1,4 +1,5 @@
 import type { APIRoute } from "astro";
+
 import { cardsFor, solutionsFor } from "../../lib/library/gated";
 
 export const GET: APIRoute = ({ locals, url }) => {

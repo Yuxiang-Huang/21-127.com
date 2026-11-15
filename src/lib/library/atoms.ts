@@ -61,11 +61,7 @@ function readParts(value: unknown, file: string): string[] {
 	return parts;
 }
 
-function readWrong(
-	value: unknown,
-	file: string,
-	parts: string[],
-): Map<number, string[]> {
+function readWrong(value: unknown, file: string, parts: string[]): Map<number, string[]> {
 	const where = `${file}: wrong`;
 	if (value === undefined) return new Map();
 	const map = readIndexMap(value, where);

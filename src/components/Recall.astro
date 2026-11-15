@@ -17,12 +17,22 @@ const { heading } = Astro.props;
 	<div data-choose>
 		<p class="recall-lead">Choose a difficulty.</p>
 		<div class="recall-difficulties">
-			<button type="button" data-difficulty="easy">Easy</button>
-			<button type="button" data-difficulty="medium">Medium</button>
-			<button type="button" data-difficulty="hard">Hard</button>
-			<button type="button" data-difficulty="mastery">Mastery</button>
+			<button type="button" data-difficulty="easy">
+				Easy
+			</button>
+			<button type="button" data-difficulty="medium">
+				Medium
+			</button>
+			<button type="button" data-difficulty="hard">
+				Hard
+			</button>
+			<button type="button" data-difficulty="mastery">
+				Mastery
+			</button>
 			<span class="recall-yuxiang-option">
-				<button type="button" data-difficulty="yuxiang">Yuxiang</button>
+				<button type="button" data-difficulty="yuxiang">
+					Yuxiang
+				</button>
 				<span class="recall-help">
 					<button
 						type="button"
@@ -49,14 +59,17 @@ const { heading } = Astro.props;
 	</div>
 	<div data-play hidden>
 		<p class="recall-progress" data-progress />
-		{/* biome-ignore lint/a11y/useHeadingContent: title is filled when a card is shown */}
 		<h2 data-title />
 		<div class="recall-statement" data-statement />
 		<div class="recall-picker" data-picker hidden>
 			<div class="recall-picker-nav" data-nav>
-				<button type="button" data-prev aria-label="Previous blank">←</button>
+				<button type="button" data-prev aria-label="Previous blank">
+					←
+				</button>
 				<p class="recall-hole" data-hole />
-				<button type="button" data-forward aria-label="Next blank">→</button>
+				<button type="button" data-forward aria-label="Next blank">
+					→
+				</button>
 			</div>
 			<div class="recall-choices" data-choices />
 		</div>
@@ -66,471 +79,463 @@ const { heading } = Astro.props;
 		</label>
 		<p class="recall-result" data-result />
 		<div class="recall-actions">
-			<button type="button" data-check>Check</button>
-			<button type="button" data-next hidden>Next</button>
+			<button type="button" data-check>
+				Check
+			</button>
+			<button type="button" data-next hidden>
+				Next
+			</button>
 		</div>
 	</div>
 	<div data-score hidden>
 		<p class="recall-score" data-score-text />
-		<button type="button" data-again>Start again</button>
+		<button type="button" data-again>
+			Start again
+		</button>
 	</div>
 </div>
 
 <script>
-import { loadGated } from "../lib/client/gated";
-import { onSession } from "../lib/client/session";
-import { clozeMarks, hideCount } from "../lib/library/cloze";
+	import { loadGated } from "../lib/client/gated";
+	import { onSession } from "../lib/client/session";
+	import { clozeMarks, hideCount } from "../lib/library/cloze";
 
-type Choice = { text: string; html: string };
-type Piece =
-	| { kind: "text"; html: string }
-	| { kind: "list" }
-	| { kind: "item" }
-	| { kind: "list-end" };
-type Part = {
-	text: string;
-	html: string;
-	pieces: Piece[];
-	wrong: Choice[] | null;
-};
-type Card = {
-	topic: string;
-	kind: string;
-	slug: string;
-	title: string;
-	quizTitle: string;
-	parts: Part[];
-};
-type Difficulty = "easy" | "medium" | "hard" | "mastery" | "yuxiang";
-
-const rates: Record<Difficulty, number> = {
-	easy: 0.25,
-	medium: 0.5,
-	hard: 0.75,
-	mastery: 1,
-	yuxiang: 1,
-};
-
-function yuxiangScore(similarities: number[]): string {
-	if (similarities.length === 0) return "0.000";
-	const mean =
-		similarities.reduce((sum, value) => sum + value, 0) / similarities.length;
-	return mean.toFixed(3);
-}
-
-function mountRecall(deck: Card[]) {
-	const root = document.querySelector(".recall");
-	if (!(root instanceof HTMLElement)) return;
-	const choose = root.querySelector("[data-choose]");
-	const play = root.querySelector("[data-play]");
-	const score = root.querySelector("[data-score]");
-	const statement = root.querySelector("[data-statement]");
-	const title = root.querySelector("[data-title]");
-	const progress = root.querySelector("[data-progress]");
-	const result = root.querySelector("[data-result]");
-	const yuxiang = root.querySelector("[data-yuxiang]");
-	const picker = root.querySelector("[data-picker]");
-	const nav = root.querySelector("[data-nav]");
-	const choices = root.querySelector("[data-choices]");
-	const holeLabel = root.querySelector("[data-hole]");
-	const prevBlank = root.querySelector("[data-prev]");
-	const nextBlank = root.querySelector("[data-forward]");
-	const input = root.querySelector("[data-input]");
-	const check = root.querySelector("[data-check]");
-	const next = root.querySelector("[data-next]");
-	const scoreText = root.querySelector("[data-score-text]");
-
-	let order: Card[] = [];
-	let index = 0;
-	let difficulty: Difficulty = "easy";
-	let startId: Promise<number | null> = Promise.resolve(null);
-	let hiddenCorrect = 0;
-	let hiddenTotal = 0;
-	let similarities: number[] = [];
-	type Hole = {
-		partIndex: number;
-		answer: string;
-		choices: Choice[];
-		selected: number;
-		el: HTMLSpanElement;
+	type Choice = { text: string; html: string };
+	type Piece =
+		| { kind: "text"; html: string }
+		| { kind: "list" }
+		| { kind: "item" }
+		| { kind: "list-end" };
+	type Part = {
+		text: string;
+		html: string;
+		pieces: Piece[];
+		wrong: Choice[] | null;
 	};
-	let holes: Hole[] = [];
-	let cardParts: string[] = [];
-	let holeAt = 0;
-	let graded = false;
+	type Card = {
+		topic: string;
+		kind: string;
+		slug: string;
+		title: string;
+		quizTitle: string;
+		parts: Part[];
+	};
+	type Difficulty = "easy" | "medium" | "hard" | "mastery" | "yuxiang";
 
-	function show(element: Element | null, visible: boolean) {
-		if (element instanceof HTMLElement) element.hidden = !visible;
+	const rates: Record<Difficulty, number> = {
+		easy: 0.25,
+		medium: 0.5,
+		hard: 0.75,
+		mastery: 1,
+		yuxiang: 1,
+	};
+
+	function yuxiangScore(similarities: number[]): string {
+		if (similarities.length === 0) return "0.000";
+		const mean = similarities.reduce((sum, value) => sum + value, 0) / similarities.length;
+		return mean.toFixed(3);
 	}
 
-	function shuffle<T>(items: T[]): T[] {
-		const copy = [...items];
-		for (let i = copy.length - 1; i > 0; i--) {
-			const j = Math.floor(Math.random() * (i + 1));
-			const swap = copy[i];
-			copy[i] = copy[j];
-			copy[j] = swap;
+	function mountRecall(deck: Card[]) {
+		const root = document.querySelector(".recall");
+		if (!(root instanceof HTMLElement)) return;
+		const choose = root.querySelector("[data-choose]");
+		const play = root.querySelector("[data-play]");
+		const score = root.querySelector("[data-score]");
+		const statement = root.querySelector("[data-statement]");
+		const title = root.querySelector("[data-title]");
+		const progress = root.querySelector("[data-progress]");
+		const result = root.querySelector("[data-result]");
+		const yuxiang = root.querySelector("[data-yuxiang]");
+		const picker = root.querySelector("[data-picker]");
+		const nav = root.querySelector("[data-nav]");
+		const choices = root.querySelector("[data-choices]");
+		const holeLabel = root.querySelector("[data-hole]");
+		const prevBlank = root.querySelector("[data-prev]");
+		const nextBlank = root.querySelector("[data-forward]");
+		const input = root.querySelector("[data-input]");
+		const check = root.querySelector("[data-check]");
+		const next = root.querySelector("[data-next]");
+		const scoreText = root.querySelector("[data-score-text]");
+
+		let order: Card[] = [];
+		let index = 0;
+		let difficulty: Difficulty = "easy";
+		let startId: Promise<number | null> = Promise.resolve(null);
+		let hiddenCorrect = 0;
+		let hiddenTotal = 0;
+		let similarities: number[] = [];
+		type Hole = {
+			partIndex: number;
+			answer: string;
+			choices: Choice[];
+			selected: number;
+			el: HTMLSpanElement;
+		};
+		let holes: Hole[] = [];
+		let cardParts: string[] = [];
+		let holeAt = 0;
+		let graded = false;
+
+		function show(element: Element | null, visible: boolean) {
+			if (element instanceof HTMLElement) element.hidden = !visible;
 		}
-		return copy;
-	}
 
-	function hiddenIndexes(card: Card): number[] {
-		const atoms = card.parts.flatMap((part, partIndex) =>
-			part.wrong ? [partIndex] : [],
-		);
-		return shuffle(atoms).slice(0, hideCount(atoms.length, rates[difficulty]));
-	}
-
-	function picks() {
-		return holes.map((hole) => ({
-			partIndex: hole.partIndex,
-			answer: hole.answer,
-			picked:
-				hole.selected >= 0 ? hole.choices[hole.selected]?.text : undefined,
-		}));
-	}
-
-	function paintHoles() {
-		const current = holes[holeAt];
-		const marks = graded ? clozeMarks(picks(), cardParts) : [];
-		for (const [i, hole] of holes.entries()) {
-			const picked =
-				hole.selected >= 0 ? hole.choices[hole.selected] : undefined;
-			hole.el.classList.toggle("active", !graded && i === holeAt);
-			if (!graded) {
-				hole.el.classList.remove("right", "wrong");
-				if (picked) hole.el.innerHTML = picked.html;
-				else hole.el.replaceChildren();
-				continue;
+		function shuffle<T>(items: T[]): T[] {
+			const copy = [...items];
+			for (let i = copy.length - 1; i > 0; i--) {
+				const j = Math.floor(Math.random() * (i + 1));
+				const swap = copy[i];
+				copy[i] = copy[j];
+				copy[j] = swap;
 			}
-			const correct = marks[i] === true;
-			hole.el.classList.remove("active");
-			hole.el.classList.toggle("right", correct);
-			hole.el.classList.toggle("wrong", !correct);
-			if (correct && picked) {
-				hole.el.innerHTML = picked.html;
-				continue;
-			}
-			const missed = document.createElement("span");
-			missed.className = "picked";
-			missed.innerHTML = picked?.html ?? "";
-			const correction = document.createElement("span");
-			correction.className = "correction";
-			correction.innerHTML =
-				hole.choices.find((item) => item.text === hole.answer)?.html ?? "";
-			hole.el.replaceChildren(missed, correction);
-		}
-		const asking = !graded && difficulty !== "yuxiang" && holes.length > 0;
-		show(picker, asking);
-		show(nav, asking && holes.length > 1);
-		if (holeLabel && asking)
-			holeLabel.textContent = `Blank ${holeAt + 1} of ${holes.length}`;
-		if (prevBlank instanceof HTMLButtonElement)
-			prevBlank.disabled = holeAt <= 0;
-		if (nextBlank instanceof HTMLButtonElement)
-			nextBlank.disabled = holeAt >= holes.length - 1;
-		if (!(choices instanceof HTMLElement)) return;
-		choices.replaceChildren();
-		if (!asking || !current) return;
-		for (const [choiceAt, item] of current.choices.entries()) {
-			const button = document.createElement("button");
-			button.type = "button";
-			button.className = "recall-option";
-			button.classList.toggle("selected", choiceAt === current.selected);
-			button.innerHTML = item.html;
-			button.addEventListener("click", () => {
-				current.selected = choiceAt;
-				if (holeAt < holes.length - 1) holeAt += 1;
-				paintHoles();
-			});
-			choices.append(button);
-		}
-	}
-
-	function shiftBlank(delta: number) {
-		if (graded || holes.length === 0) return;
-		const nextAt = holeAt + delta;
-		if (nextAt < 0 || nextAt >= holes.length) return;
-		holeAt = nextAt;
-		paintHoles();
-	}
-
-	function renderCard() {
-		const card = order[index];
-		if (!card || !(statement instanceof HTMLElement)) return;
-		if (title) {
-			title.textContent =
-				difficulty === "yuxiang" ? card.title : card.quizTitle;
-		}
-		if (progress) {
-			progress.textContent = `${index + 1} of ${order.length}`;
-		}
-		if (result) result.textContent = "";
-		statement.replaceChildren();
-		holes = [];
-		cardParts = card.parts.map((part) => part.text);
-		holeAt = 0;
-		graded = false;
-		show(yuxiang, difficulty === "yuxiang");
-		show(picker, false);
-		if (input instanceof HTMLTextAreaElement) {
-			input.value = "";
-			input.readOnly = false;
-		}
-		show(check, true);
-		show(next, false);
-		if (check instanceof HTMLButtonElement) {
-			check.disabled = false;
-			check.textContent = "Check";
+			return copy;
 		}
 
-		if (difficulty === "yuxiang") return;
-		const hidden = new Set(hiddenIndexes(card));
-		fillStatement(statement, card.parts, (part, partIndex) => {
-			if (!hidden.has(partIndex) || !part.wrong) return null;
-			const el = document.createElement("span");
-			el.className = "blank-line";
-			const hole: Hole = {
-				partIndex,
-				answer: part.text,
-				choices: shuffle([{ text: part.text, html: part.html }, ...part.wrong]),
-				selected: -1,
-				el,
-			};
-			el.addEventListener("click", () => {
-				const at = holes.indexOf(hole);
-				if (graded || at < 0) return;
-				holeAt = at;
-				paintHoles();
-			});
-			holes.push(hole);
-			return el;
-		});
-		paintHoles();
-	}
+		function hiddenIndexes(card: Card): number[] {
+			const atoms = card.parts.flatMap((part, partIndex) => (part.wrong ? [partIndex] : []));
+			return shuffle(atoms).slice(0, hideCount(atoms.length, rates[difficulty]));
+		}
 
-	function fillStatement(
-		target: HTMLElement,
-		parts: Part[],
-		blankFor: (part: Part, partIndex: number) => HTMLElement | null,
-	) {
-		let list: HTMLUListElement | null = null;
-		let item: HTMLLIElement | null = null;
-		const current = () => item ?? target;
-		for (const [partIndex, part] of parts.entries()) {
-			const blank = blankFor(part, partIndex);
-			let usedBlank = false;
-			for (const piece of part.pieces) {
-				if (piece.kind === "list") {
-					list = document.createElement("ul");
-					target.append(list);
-					item = null;
+		function picks() {
+			return holes.map((hole) => ({
+				partIndex: hole.partIndex,
+				answer: hole.answer,
+				picked: hole.selected >= 0 ? hole.choices[hole.selected]?.text : undefined,
+			}));
+		}
+
+		function paintHoles() {
+			const current = holes[holeAt];
+			const marks = graded ? clozeMarks(picks(), cardParts) : [];
+			for (const [i, hole] of holes.entries()) {
+				const picked = hole.selected >= 0 ? hole.choices[hole.selected] : undefined;
+				hole.el.classList.toggle("active", !graded && i === holeAt);
+				if (!graded) {
+					hole.el.classList.remove("right", "wrong");
+					if (picked) hole.el.innerHTML = picked.html;
+					else hole.el.replaceChildren();
 					continue;
 				}
-				if (piece.kind === "item") {
-					if (!list) {
+				const correct = marks[i] === true;
+				hole.el.classList.remove("active");
+				hole.el.classList.toggle("right", correct);
+				hole.el.classList.toggle("wrong", !correct);
+				if (correct && picked) {
+					hole.el.innerHTML = picked.html;
+					continue;
+				}
+				const missed = document.createElement("span");
+				missed.className = "picked";
+				missed.innerHTML = picked?.html ?? "";
+				const correction = document.createElement("span");
+				correction.className = "correction";
+				correction.innerHTML = hole.choices.find((item) => item.text === hole.answer)?.html ?? "";
+				hole.el.replaceChildren(missed, correction);
+			}
+			const asking = !graded && difficulty !== "yuxiang" && holes.length > 0;
+			show(picker, asking);
+			show(nav, asking && holes.length > 1);
+			if (holeLabel && asking) holeLabel.textContent = `Blank ${holeAt + 1} of ${holes.length}`;
+			if (prevBlank instanceof HTMLButtonElement) prevBlank.disabled = holeAt <= 0;
+			if (nextBlank instanceof HTMLButtonElement) nextBlank.disabled = holeAt >= holes.length - 1;
+			if (!(choices instanceof HTMLElement)) return;
+			choices.replaceChildren();
+			if (!asking || !current) return;
+			for (const [choiceAt, item] of current.choices.entries()) {
+				const button = document.createElement("button");
+				button.type = "button";
+				button.className = "recall-option";
+				button.classList.toggle("selected", choiceAt === current.selected);
+				button.innerHTML = item.html;
+				button.addEventListener("click", () => {
+					current.selected = choiceAt;
+					if (holeAt < holes.length - 1) holeAt += 1;
+					paintHoles();
+				});
+				choices.append(button);
+			}
+		}
+
+		function shiftBlank(delta: number) {
+			if (graded || holes.length === 0) return;
+			const nextAt = holeAt + delta;
+			if (nextAt < 0 || nextAt >= holes.length) return;
+			holeAt = nextAt;
+			paintHoles();
+		}
+
+		function renderCard() {
+			const card = order[index];
+			if (!card || !(statement instanceof HTMLElement)) return;
+			if (title) {
+				title.textContent = difficulty === "yuxiang" ? card.title : card.quizTitle;
+			}
+			if (progress) {
+				progress.textContent = `${index + 1} of ${order.length}`;
+			}
+			if (result) result.textContent = "";
+			statement.replaceChildren();
+			holes = [];
+			cardParts = card.parts.map((part) => part.text);
+			holeAt = 0;
+			graded = false;
+			show(yuxiang, difficulty === "yuxiang");
+			show(picker, false);
+			if (input instanceof HTMLTextAreaElement) {
+				input.value = "";
+				input.readOnly = false;
+			}
+			show(check, true);
+			show(next, false);
+			if (check instanceof HTMLButtonElement) {
+				check.disabled = false;
+				check.textContent = "Check";
+			}
+
+			if (difficulty === "yuxiang") return;
+			const hidden = new Set(hiddenIndexes(card));
+			fillStatement(statement, card.parts, (part, partIndex) => {
+				if (!hidden.has(partIndex) || !part.wrong) return null;
+				const el = document.createElement("span");
+				el.className = "blank-line";
+				const hole: Hole = {
+					partIndex,
+					answer: part.text,
+					choices: shuffle([{ text: part.text, html: part.html }, ...part.wrong]),
+					selected: -1,
+					el,
+				};
+				el.addEventListener("click", () => {
+					const at = holes.indexOf(hole);
+					if (graded || at < 0) return;
+					holeAt = at;
+					paintHoles();
+				});
+				holes.push(hole);
+				return el;
+			});
+			paintHoles();
+		}
+
+		function fillStatement(
+			target: HTMLElement,
+			parts: Part[],
+			blankFor: (part: Part, partIndex: number) => HTMLElement | null,
+		) {
+			let list: HTMLUListElement | null = null;
+			let item: HTMLLIElement | null = null;
+			const current = () => item ?? target;
+			for (const [partIndex, part] of parts.entries()) {
+				const blank = blankFor(part, partIndex);
+				let usedBlank = false;
+				for (const piece of part.pieces) {
+					if (piece.kind === "list") {
 						list = document.createElement("ul");
 						target.append(list);
+						item = null;
+						continue;
 					}
-					item = document.createElement("li");
-					list.append(item);
-					continue;
+					if (piece.kind === "item") {
+						if (!list) {
+							list = document.createElement("ul");
+							target.append(list);
+						}
+						item = document.createElement("li");
+						list.append(item);
+						continue;
+					}
+					if (piece.kind === "list-end") {
+						list = null;
+						item = null;
+						continue;
+					}
+					if (blank && !usedBlank) {
+						current().append(blank);
+						usedBlank = true;
+						continue;
+					}
+					if (blank) continue;
+					const span = document.createElement("span");
+					span.innerHTML = piece.html;
+					current().append(span);
 				}
-				if (piece.kind === "list-end") {
-					list = null;
-					item = null;
-					continue;
-				}
-				if (blank && !usedBlank) {
-					current().append(blank);
-					usedBlank = true;
-					continue;
-				}
-				if (blank) continue;
-				const span = document.createElement("span");
-				span.innerHTML = piece.html;
-				current().append(span);
+				if (blank && !usedBlank) current().append(blank);
 			}
-			if (blank && !usedBlank) current().append(blank);
 		}
-	}
 
-	function markCard() {
-		graded = true;
-		const correct = clozeMarks(picks(), cardParts).filter(Boolean).length;
-		hiddenCorrect += correct;
-		hiddenTotal += holes.length;
-		paintHoles();
-		if (result) result.textContent = `${correct} / ${holes.length}`;
-		show(check, false);
-		show(next, true);
-		if (next instanceof HTMLButtonElement) {
-			next.textContent = index + 1 === order.length ? "Score" : "Next";
-		}
-	}
-
-	async function markYuxiang() {
-		const card = order[index];
-		if (
-			!card ||
-			!(input instanceof HTMLTextAreaElement) ||
-			!(check instanceof HTMLButtonElement)
-		) {
-			return;
-		}
-		const typed = input.value;
-		if (typed.trim() === "") {
-			if (result) result.textContent = "Type the LaTeX before checking.";
-			return;
-		}
-		check.disabled = true;
-		if (result) result.textContent = "Checking…";
-		let similarity: number;
-		try {
-			const response = await fetch("/api/yuxiang", {
-				method: "POST",
-				headers: { "content-type": "application/json" },
-				body: JSON.stringify({
-					topic: card.topic,
-					kind: card.kind,
-					slug: card.slug,
-					input: typed,
-				}),
-			});
-			const body = (await response.json()) as {
-				similarity?: number;
-				error?: string;
-			};
-			if (!response.ok || typeof body.similarity !== "number") {
-				check.disabled = false;
-				if (result)
-					result.textContent = body.error ?? "Yuxiang is unavailable.";
-				return;
+		function markCard() {
+			graded = true;
+			const correct = clozeMarks(picks(), cardParts).filter(Boolean).length;
+			hiddenCorrect += correct;
+			hiddenTotal += holes.length;
+			paintHoles();
+			if (result) result.textContent = `${correct} / ${holes.length}`;
+			show(check, false);
+			show(next, true);
+			if (next instanceof HTMLButtonElement) {
+				next.textContent = index + 1 === order.length ? "Score" : "Next";
 			}
-			similarity = body.similarity;
-		} catch {
-			check.disabled = false;
-			if (result) result.textContent = "Yuxiang is unavailable.";
-			return;
 		}
-		similarities.push(similarity);
-		if (result) result.textContent = `Score: ${similarity.toFixed(3)}`;
-		if (statement instanceof HTMLElement) {
-			statement.replaceChildren();
-			fillStatement(statement, card.parts, () => null);
-		}
-		input.readOnly = true;
-		show(check, false);
-		show(next, true);
-		if (next instanceof HTMLButtonElement) {
-			next.textContent = index + 1 === order.length ? "Score" : "Next";
-		}
-	}
 
-	function finish() {
-		show(play, false);
-		show(score, true);
-		const result =
-			difficulty === "yuxiang"
-				? yuxiangScore(similarities)
-				: `${hiddenCorrect} / ${hiddenTotal}`;
-		if (scoreText) {
-			scoreText.textContent =
-				difficulty === "yuxiang" ? `Score: ${result}` : result;
-		}
-		const pending = startId;
-		void pending.then((id) => {
-			if (id == null) return;
-			void fetch("/api/quiz-start", {
-				method: "PATCH",
-				headers: { "content-type": "application/json" },
-				body: JSON.stringify({ id, score: result }),
-			}).catch(() => {});
-		});
-	}
-
-	for (const button of root.querySelectorAll("[data-difficulty]")) {
-		button.addEventListener("click", () => {
-			const name = button.getAttribute("data-difficulty");
+		async function markYuxiang() {
+			const card = order[index];
 			if (
-				name !== "easy" &&
-				name !== "medium" &&
-				name !== "hard" &&
-				name !== "mastery" &&
-				name !== "yuxiang"
+				!card ||
+				!(input instanceof HTMLTextAreaElement) ||
+				!(check instanceof HTMLButtonElement)
 			) {
 				return;
 			}
-			difficulty = name;
-			order = shuffle(deck);
-			index = 0;
-			hiddenCorrect = 0;
-			hiddenTotal = 0;
-			similarities = [];
-			show(choose, false);
-			show(score, false);
-			show(play, true);
-			renderCard();
-			startId = fetch("/api/quiz-start", {
-				method: "POST",
-				headers: { "content-type": "application/json" },
-				body: JSON.stringify({
-					page: location.pathname,
-					difficulty: name,
-				}),
-			})
-				.then(async (response) => {
-					if (!response.ok) return null;
-					const body = (await response.json()) as { id?: unknown };
-					return typeof body.id === "number" ? body.id : null;
+			const typed = input.value;
+			if (typed.trim() === "") {
+				if (result) result.textContent = "Type the LaTeX before checking.";
+				return;
+			}
+			check.disabled = true;
+			if (result) result.textContent = "Checking…";
+			let similarity: number;
+			try {
+				const response = await fetch("/api/yuxiang", {
+					method: "POST",
+					headers: { "content-type": "application/json" },
+					body: JSON.stringify({
+						topic: card.topic,
+						kind: card.kind,
+						slug: card.slug,
+						input: typed,
+					}),
+				});
+				const body = (await response.json()) as {
+					similarity?: number;
+					error?: string;
+				};
+				if (!response.ok || typeof body.similarity !== "number") {
+					check.disabled = false;
+					if (result) result.textContent = body.error ?? "Yuxiang is unavailable.";
+					return;
+				}
+				similarity = body.similarity;
+			} catch {
+				check.disabled = false;
+				if (result) result.textContent = "Yuxiang is unavailable.";
+				return;
+			}
+			similarities.push(similarity);
+			if (result) result.textContent = `Score: ${similarity.toFixed(3)}`;
+			if (statement instanceof HTMLElement) {
+				statement.replaceChildren();
+				fillStatement(statement, card.parts, () => null);
+			}
+			input.readOnly = true;
+			show(check, false);
+			show(next, true);
+			if (next instanceof HTMLButtonElement) {
+				next.textContent = index + 1 === order.length ? "Score" : "Next";
+			}
+		}
+
+		function finish() {
+			show(play, false);
+			show(score, true);
+			const result =
+				difficulty === "yuxiang" ? yuxiangScore(similarities) : `${hiddenCorrect} / ${hiddenTotal}`;
+			if (scoreText) {
+				scoreText.textContent = difficulty === "yuxiang" ? `Score: ${result}` : result;
+			}
+			const pending = startId;
+			void pending.then((id) => {
+				if (id == null) return;
+				void fetch("/api/quiz-start", {
+					method: "PATCH",
+					headers: { "content-type": "application/json" },
+					body: JSON.stringify({ id, score: result }),
+				}).catch(() => {});
+			});
+		}
+
+		for (const button of root.querySelectorAll("[data-difficulty]")) {
+			button.addEventListener("click", () => {
+				const name = button.getAttribute("data-difficulty");
+				if (
+					name !== "easy" &&
+					name !== "medium" &&
+					name !== "hard" &&
+					name !== "mastery" &&
+					name !== "yuxiang"
+				) {
+					return;
+				}
+				difficulty = name;
+				order = shuffle(deck);
+				index = 0;
+				hiddenCorrect = 0;
+				hiddenTotal = 0;
+				similarities = [];
+				show(choose, false);
+				show(score, false);
+				show(play, true);
+				renderCard();
+				startId = fetch("/api/quiz-start", {
+					method: "POST",
+					headers: { "content-type": "application/json" },
+					body: JSON.stringify({
+						page: location.pathname,
+						difficulty: name,
+					}),
 				})
-				.catch(() => null);
+					.then(async (response) => {
+						if (!response.ok) return null;
+						const body = (await response.json()) as { id?: unknown };
+						return typeof body.id === "number" ? body.id : null;
+					})
+					.catch(() => null);
+			});
+		}
+
+		prevBlank?.addEventListener("click", () => shiftBlank(-1));
+		nextBlank?.addEventListener("click", () => shiftBlank(1));
+		document.addEventListener("keydown", (event) => {
+			if (!(picker instanceof HTMLElement) || picker.hidden) return;
+			if (event.target instanceof HTMLTextAreaElement) return;
+			if (event.key === "ArrowLeft") {
+				event.preventDefault();
+				shiftBlank(-1);
+			} else if (event.key === "ArrowRight") {
+				event.preventDefault();
+				shiftBlank(1);
+			}
+		});
+
+		check?.addEventListener("click", () => {
+			if (difficulty === "yuxiang") void markYuxiang();
+			else markCard();
+		});
+
+		next?.addEventListener("click", () => {
+			index += 1;
+			if (index >= order.length) finish();
+			else renderCard();
+		});
+
+		root.querySelector("[data-again]")?.addEventListener("click", () => {
+			show(score, false);
+			show(play, false);
+			show(choose, true);
 		});
 	}
 
-	prevBlank?.addEventListener("click", () => shiftBlank(-1));
-	nextBlank?.addEventListener("click", () => shiftBlank(1));
-	document.addEventListener("keydown", (event) => {
-		if (!(picker instanceof HTMLElement) || picker.hidden) return;
-		if (event.target instanceof HTMLTextAreaElement) return;
-		if (event.key === "ArrowLeft") {
-			event.preventDefault();
-			shiftBlank(-1);
-		} else if (event.key === "ArrowRight") {
-			event.preventDefault();
-			shiftBlank(1);
-		}
+	onSession((user) => {
+		if (!user) return;
+		void loadGated().then((payload) => {
+			const root = document.querySelector(".recall");
+			if (!(root instanceof HTMLElement) || root.dataset.ready === "true") return;
+			if (!payload || payload.cards.length === 0) return;
+			root.dataset.ready = "true";
+			const gate = document.querySelector("[data-quiz-gate]");
+			if (gate instanceof HTMLElement) gate.hidden = true;
+			root.hidden = false;
+			mountRecall(payload.cards as Card[]);
+		});
 	});
-
-	check?.addEventListener("click", () => {
-		if (difficulty === "yuxiang") void markYuxiang();
-		else markCard();
-	});
-
-	next?.addEventListener("click", () => {
-		index += 1;
-		if (index >= order.length) finish();
-		else renderCard();
-	});
-
-	root.querySelector("[data-again]")?.addEventListener("click", () => {
-		show(score, false);
-		show(play, false);
-		show(choose, true);
-	});
-}
-
-onSession((user) => {
-	if (!user) return;
-	void loadGated().then((payload) => {
-		const root = document.querySelector(".recall");
-		if (!(root instanceof HTMLElement) || root.dataset.ready === "true") return;
-		if (!payload || payload.cards.length === 0) return;
-		root.dataset.ready = "true";
-		const gate = document.querySelector("[data-quiz-gate]");
-		if (gate instanceof HTMLElement) gate.hidden = true;
-		root.hidden = false;
-		mountRecall(payload.cards as Card[]);
-	});
-});
 </script>

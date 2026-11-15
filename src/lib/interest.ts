@@ -1,4 +1,5 @@
 import { eq } from "drizzle-orm";
+
 import { db, interests } from "../db";
 
 export async function getInterestCount(): Promise<number> {
@@ -14,10 +15,7 @@ export async function hasInterest(clerkUserId: string): Promise<boolean> {
 	return row != null;
 }
 
-export async function addInterest(
-	clerkUserId: string,
-	email: string | null,
-): Promise<void> {
+export async function addInterest(clerkUserId: string, email: string | null): Promise<void> {
 	await db()
 		.insert(interests)
 		.values({
@@ -32,10 +30,7 @@ export async function removeInterest(clerkUserId: string): Promise<void> {
 	await db().delete(interests).where(eq(interests.clerkUserId, clerkUserId));
 }
 
-export async function toggleInterest(
-	clerkUserId: string,
-	email: string | null,
-): Promise<boolean> {
+export async function toggleInterest(clerkUserId: string, email: string | null): Promise<boolean> {
 	if (await hasInterest(clerkUserId)) {
 		await removeInterest(clerkUserId);
 		return false;

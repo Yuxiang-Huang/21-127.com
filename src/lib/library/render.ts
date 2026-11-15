@@ -86,10 +86,7 @@ function stripDocument(source: string, file: string): string {
 	return withoutInput.slice(begin.index + begin[0].length, end.index);
 }
 
-function extractSection(
-	source: string,
-	file: string,
-): { title: string; body: string } {
+function extractSection(source: string, file: string): { title: string; body: string } {
 	const { body, groups } = extractGroups(source, "\\section*", file);
 	if (groups.length !== 1) {
 		throw new Error(`${file}: expected one \\section*, found ${groups.length}`);
@@ -132,9 +129,7 @@ function extractEnumeratedSolutions(
 		source.slice(0, begin).includes("\\showsolution") ||
 		source.slice(end + endToken.length).trim()
 	) {
-		throw new Error(
-			`${file}: multiple solutions must sit inside one enumerate`,
-		);
+		throw new Error(`${file}: multiple solutions must sit inside one enumerate`);
 	}
 	const list = source.slice(begin + beginToken.length, end);
 	const items = splitItems(list, file).map((item) => {
@@ -154,11 +149,7 @@ function splitItems(source: string, file: string): string[] {
 	let start = -1;
 	while (i < source.length) {
 		if (source[i] === "\\") {
-			if (
-				depth === 0 &&
-				source.startsWith("\\item", i) &&
-				!/[a-zA-Z]/.test(source[i + 5] ?? "")
-			) {
+			if (depth === 0 && source.startsWith("\\item", i) && !/[a-zA-Z]/.test(source[i + 5] ?? "")) {
 				if (start >= 0) parts.push(source.slice(start, i));
 				i += "\\item".length;
 				i = skipItemLabel(source, i);
@@ -199,10 +190,7 @@ function extractGroups(
 	let body = "";
 	let i = 0;
 	while (i < source.length) {
-		if (
-			source.startsWith(command, i) &&
-			!/[a-zA-Z]/.test(source[i + command.length] ?? "")
-		) {
+		if (source.startsWith(command, i) && !/[a-zA-Z]/.test(source[i + command.length] ?? "")) {
 			let j = i + command.length;
 			while (source[j] === " " || source[j] === "\n" || source[j] === "\t") {
 				j++;
@@ -221,11 +209,7 @@ function extractGroups(
 	return { body, groups };
 }
 
-function readBraces(
-	source: string,
-	open: number,
-	file: string,
-): { inner: string; next: number } {
+function readBraces(source: string, open: number, file: string): { inner: string; next: number } {
 	if (source[open] !== "{") throw new Error(`${file}: expected {`);
 	let depth = 0;
 	for (let i = open; i < source.length; i++) {
@@ -268,8 +252,7 @@ function rewriteTags(tex: string, file: string): string {
 		if (tex.startsWith("\\tag", i) && !/[a-zA-Z]/.test(tex[i + 4] ?? "")) {
 			let j = i + 4;
 			while (tex[j] === " " || tex[j] === "\n" || tex[j] === "\t") j++;
-			if (tex[j] !== "{")
-				throw new Error(`${file}: \\tag is missing its braces`);
+			if (tex[j] !== "{") throw new Error(`${file}: \\tag is missing its braces`);
 			const group = readBraces(tex, j, file);
 			out += tagReplacement(group.inner, file);
 			i = group.next;
@@ -408,9 +391,7 @@ class Parser {
 			if (!this.peekCommand("item")) throw this.fail("expected \\item");
 			this.i += "\\item".length;
 			const label = this.readItemLabel();
-			const inner = this.parseContent(
-				() => this.peekCommand("item") || this.peekCommand("end"),
-			);
+			const inner = this.parseContent(() => this.peekCommand("item") || this.peekCommand("end"));
 			const labelHtml = label
 				? `<span class="item-label">${new Parser(label, this.file).renderInlines()}</span> `
 				: "";
@@ -440,11 +421,7 @@ class Parser {
 			this.i += 2;
 			return "–";
 		}
-		if (
-			this.src[this.i] === "-" ||
-			this.src[this.i] === "'" ||
-			this.src[this.i] === "`"
-		) {
+		if (this.src[this.i] === "-" || this.src[this.i] === "'" || this.src[this.i] === "`") {
 			const ch = this.src[this.i] ?? "";
 			this.i += 1;
 			return escapeHtml(ch);
@@ -483,10 +460,7 @@ class Parser {
 			return this.parseControlSymbol(ch);
 		}
 		const start = this.i;
-		while (
-			this.i < this.src.length &&
-			/[a-zA-Z]/.test(this.src[this.i] ?? "")
-		) {
+		while (this.i < this.src.length && /[a-zA-Z]/.test(this.src[this.i] ?? "")) {
 			this.i++;
 		}
 		const name = this.src.slice(start, this.i);
@@ -505,9 +479,7 @@ class Parser {
 	private parseLink(name: "url" | "href"): string {
 		const url = this.readUrl();
 		const label =
-			name === "url"
-				? escapeHtml(url)
-				: new Parser(this.readBalanced(), this.file).renderInlines();
+			name === "url" ? escapeHtml(url) : new Parser(this.readBalanced(), this.file).renderInlines();
 		return `<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">${label}</a>`;
 	}
 

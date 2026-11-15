@@ -1,4 +1,5 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, test } from "vite-plus/test";
+
 import { parseQuestion } from "./atoms";
 import { assembleCatalog, type SourceFile } from "./catalog";
 import { clozeMarks, hideCount, questionPieces } from "./recall";
@@ -68,9 +69,9 @@ wrong:
 
 	test("an empty or non-string quiz title fails", () => {
 		for (const title of ['""', "3"]) {
-			expect(() =>
-				parseQuestion(`title: ${title}\nparts:\n  0: "$A$"\n`, "a.yaml"),
-			).toThrow("title must be a non-empty string");
+			expect(() => parseQuestion(`title: ${title}\nparts:\n  0: "$A$"\n`, "a.yaml")).toThrow(
+				"title must be a non-empty string",
+			);
 		}
 	});
 });
@@ -135,13 +136,7 @@ describe("questionPieces", () => {
 		const pieces = questionPieces(
 			"satisfies:\\begin{itemize}\\item \\textbf{Totality}: for all $a$.\\end{itemize}",
 		);
-		expect(pieces.map((piece) => piece.kind)).toEqual([
-			"text",
-			"list",
-			"item",
-			"text",
-			"list-end",
-		]);
+		expect(pieces.map((piece) => piece.kind)).toEqual(["text", "list", "item", "text", "list-end"]);
 		const item = pieces[3];
 		expect(item?.kind).toBe("text");
 		if (item?.kind === "text") {

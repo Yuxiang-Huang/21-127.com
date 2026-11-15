@@ -5,6 +5,7 @@ import Solution from "../../../../components/Solution.astro";
 import Layout from "../../../../layouts/Layout.astro";
 import { entryPaths } from "../../../../lib/library/gated";
 import { catalog, getEntry } from "../../../../lib/library/load";
+
 import "../../../../styles/library.css";
 
 export const prerender = true;
@@ -67,5 +68,5 @@ const { topic, subtopic, entry } = found;
 </Layout>
 
 <script>
-import "katex/contrib/copy-tex";
+	import "katex/contrib/copy-tex";
 </script>

@@ -1,10 +1,6 @@
 import type { APIRoute } from "astro";
-import {
-	getInterestCount,
-	hasInterest,
-	primaryEmail,
-	toggleInterest,
-} from "../../lib/interest";
+
+import { getInterestCount, hasInterest, primaryEmail, toggleInterest } from "../../lib/interest";
 
 export const GET: APIRoute = async ({ locals }) => {
 	const count = await getInterestCount();

@@ -5,6 +5,7 @@ import Solution from "../../../components/Solution.astro";
 import Layout from "../../../layouts/Layout.astro";
 import { kindPaths } from "../../../lib/library/gated";
 import { catalog, getSubtopic } from "../../../lib/library/load";
+
 import "../../../styles/library.css";
 
 export const prerender = true;
@@ -15,10 +16,7 @@ export function getStaticPaths() {
 
 const topicSlug = Astro.params.topic;
 const subtopicSlug = Astro.params.subtopic;
-const found =
-	topicSlug && subtopicSlug
-		? getSubtopic(catalog, topicSlug, subtopicSlug)
-		: undefined;
+const found = topicSlug && subtopicSlug ? getSubtopic(catalog, topicSlug, subtopicSlug) : undefined;
 if (!found || found.subtopic.kinds.definitions.length === 0) {
 	throw new Error(`missing definitions page ${topicSlug}/${subtopicSlug}`);
 }
@@ -28,11 +26,7 @@ const definitions = subtopic.kinds.definitions;
 
 <Layout title={`${subtopic.title} · 21-127`}>
 	<div class="library reading">
-		<LibrarySidebar
-			topic={topic}
-			subtopic={subtopic}
-			currentKind="definitions"
-		/>
+		<LibrarySidebar topic={topic} subtopic={subtopic} currentKind="definitions" />
 		<article class="article">
 			<h1>{subtopic.title}</h1>
 			{definitions.map((entry) => (
@@ -47,5 +41,5 @@ const definitions = subtopic.kinds.definitions;
 </Layout>
 
 <script>
-import "katex/contrib/copy-tex";
+	import "katex/contrib/copy-tex";
 </script>

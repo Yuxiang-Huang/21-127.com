@@ -5,6 +5,7 @@ import Recall from "../../../components/Recall.astro";
 import Layout from "../../../layouts/Layout.astro";
 import { subtopicQuizPaths } from "../../../lib/library/gated";
 import { catalog, getSubtopic } from "../../../lib/library/load";
+
 import "../../../styles/library.css";
 
 export const prerender = true;
@@ -15,10 +16,7 @@ export function getStaticPaths() {
 
 const topicSlug = Astro.params.topic;
 const subtopicSlug = Astro.params.subtopic;
-const found =
-	topicSlug && subtopicSlug
-		? getSubtopic(catalog, topicSlug, subtopicSlug)
-		: undefined;
+const found = topicSlug && subtopicSlug ? getSubtopic(catalog, topicSlug, subtopicSlug) : undefined;
 if (!found || found.subtopic.slug === "quiz") {
 	throw new Error(`missing quiz ${topicSlug}/${subtopicSlug}`);
 }
